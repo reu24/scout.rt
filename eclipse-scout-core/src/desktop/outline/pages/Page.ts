@@ -8,9 +8,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  BaseDoEntity, BookmarkAdapter, ButtonTile, ChildModelOf, Constructor, dataObjects, DoTypeResolver, EnumObject, Event, EventHandler, EventListener, EventMapOf, EventModel, EventSupport, Form, HtmlComponent, icons, InitModelOf, inspector,
+  BaseDoEntity, BookmarkAdapter, BookmarkTableRowIdentifierDo, ButtonTile, ChildModelOf, Constructor, dataObjects, DoTypeResolver, EnumObject, Event, EventHandler, EventListener, EventMapOf, EventModel, EventSupport, Form,
+  HtmlComponent, icons, InitModelOf, inspector,
   Menu, MenuBar, menus,
-  ObjectOrChildModel, ObjectUuidBuilder, ObjectUuidProvider, ObjectWithObjectUuidBuilder, ObjectWithUuid, Outline, PageEventMap, PageIdDummyPageParamDo, PageModel, PropertyChangeEvent, scout, strings, Table, TableRow, TableRowClickEvent,
+  ObjectOrChildModel, ObjectUuidBuilder, ObjectUuidProvider, ObjectWithObjectUuidBuilder, ObjectWithUuid, Outline, PageEventMap, PageIdDummyPageParamDo, PageModel,
+  PropertyChangeEvent, scout, strings, Table, TableRow, TableRowClickEvent,
   TileOutlineOverview, TileOverviewForm, TreeNode, Widget
 } from '../../../index';
 import $ from 'jquery';
@@ -633,6 +635,11 @@ export class Page extends TreeNode implements PageModel, ObjectWithUuid, ObjectW
       return scout.create(PageIdDummyPageParamDo, {pageId});
     }
     return null;
+  }
+
+  // FIXME bsh [js-bookmark] Document
+  getTableRowIdentifier(row: TableRow, allowObjectFallback = false): BookmarkTableRowIdentifierDo {
+    return row.bookmarkIdentifier;
   }
 
   setPageChanging(changing: boolean) {
