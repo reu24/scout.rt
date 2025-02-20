@@ -279,6 +279,7 @@ export class OutlineAdapter extends TreeAdapter {
         parent: nodeModel.parent,
         owner: nodeModel.owner,
         objectType: nodeModel.jsPageObjectType,
+        pageParam: nodeModel.pageParam, // FIXME CGU [js-bookmark] I would prefer to deserialize it here instead of Page#set_pageParam so it behaves the same as for JsFormAdapter, but in that case Page.pageParamType would be ignored. Do we really need @pageParam?
         text: nodeModel.text || undefined // because summary column might come from Java parent page
       };
 
