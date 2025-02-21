@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2023 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -28,6 +28,7 @@ import org.eclipse.scout.rt.security.IAccessControlService;
 import org.eclipse.scout.rt.server.IServerSession;
 import org.eclipse.scout.rt.server.ServerConfigProperties.ServerSessionCacheExpirationProperty;
 import org.eclipse.scout.rt.server.session.ServerSessionProviderWithCache;
+import org.eclipse.scout.rt.shared.servicetunnel.http.HttpServiceTunnel;
 
 /**
  * Filter which creates a {@link ServerRunContext} using the current {@link Subject} and calls the next filter inside
@@ -78,8 +79,13 @@ public class ServerRunContextFilter implements Filter {
   }
 
   protected ServerRunContext lookupRunContext(HttpServletRequest req, HttpServletResponse resp) {
-    final ServerRunContext sessionContext = getSessionContextProducer().produce(Subject.getSubject(AccessController.getContext()));
-    return getHttpServerRunContextProducer().produce(req, resp, null, sessionContext);
+    boolean sessionLess = req.getHeader(HttpServiceTunnel.WITHOUT_SESSION_HEADER) == null;
+    final ServerRunContext sessionContext = sessionLess
+        ? getSessionContextProducer().produce(Subject.getSubject(AccessController.getContext()))
+        : null;
+    return getHttpServerRunContextProducer()
+        .withSessionSupport(false)
+        .produce(req, resp, null, sessionContext);
   }
 
   @Override

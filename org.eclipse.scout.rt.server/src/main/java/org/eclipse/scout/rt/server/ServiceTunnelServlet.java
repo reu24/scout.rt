@@ -12,6 +12,8 @@ package org.eclipse.scout.rt.server;
 import static org.eclipse.scout.rt.server.commons.opentelemetry.SpanNamePropagationFromDownstream.addNameToContext;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.AccessController;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +25,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
+import org.eclipse.scout.rt.platform.ApplicationScoped;
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.exception.DefaultExceptionTranslator;
 import org.eclipse.scout.rt.platform.transaction.TransactionCancelledError;
@@ -59,7 +65,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Use this Servlet to dispatch scout UI service requests using {@link ServiceTunnelRequest},
  * {@link ServiceTunnelResponse} and any {@link IServiceTunnelContentHandler} implementation.
+ *
+ * FIXME removal?
  */
+@ApplicationScoped
 public class ServiceTunnelServlet extends AbstractHttpServlet {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ServiceTunnelServlet.class);
@@ -191,6 +200,71 @@ public class ServiceTunnelServlet extends AbstractHttpServlet {
     return Boolean.TRUE.toString().equalsIgnoreCase(servletRequest.getHeader(HttpServiceTunnel.ID_SIGNATURE_HTTP_HEADER));
   }
 
+  // incoming request
+  public void incomingRequest(InputStream in, OutputStream out) {
+    if (Subject.getSubject(AccessController.getContext()) == null) {
+      throw new ForbiddenException();
+    }
+
+    lazyInit(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_REQUEST.get(), IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_RESPONSE.get());
+
+    try {
+      m_serverRunContextProducer.get()
+          .getInnerRunContextProducer()
+          .produce(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_REQUEST.get(), IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_RESPONSE.get())
+          .withProperties(enableSignature(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_REQUEST.get()) ? Map.of(ServiceTunnelOptions.ID_SIGNATURE_PROP, true) : Map.of())
+          .run(() -> {
+            ServiceTunnelRequest serviceRequest = deserializeServiceRequest(in);
+            ServiceTunnelResponse serviceResponse = doPost(serviceRequest);
+
+            // Clear the current thread's interruption status before writing the response to the output stream.
+            // Otherwise, the stream gets silently corrupted, which triggers  a repetition of the current request by Java connection mechanism.
+            IRestorer interruption = ThreadInterruption.clear();
+            try {
+              // FIXME serializeServiceResponse(serviceResponse);
+              m_contentHandler.writeResponse(out, serviceResponse);
+            }
+            finally {
+              interruption.restore();
+            }
+          }, DefaultExceptionTranslator.class);
+    }
+    catch (DuplicateRequestException e) {
+      final boolean interrupted = Thread.interrupted();
+      if (interrupted) {
+        LOG.debug("Duplicate Request{}", interruptInfo(interrupted), e);
+      }
+      else {
+        LOG.warn("Duplicate Request{}", interruptInfo(interrupted), e);
+      }
+      throw new WebApplicationException("Request is a duplicate", Response.Status.CONFLICT);
+    }
+    catch (Throwable e) {//NOSONAR
+      final boolean interrupted = Thread.interrupted();
+      if (isConnectionError(e)) {
+        // Ignore disconnect errors: do not throw an exception, if the client closed the connection.
+        LOG.debug("Connection Error{}", interruptInfo(interrupted), e);
+        // do not call sendError, as the connection is invalid anyway. May throw IllegalStateException otherwise hiding the original exception.
+      }
+      else if (isInterruption(e)) {
+        if (isCancellation(e)) {
+          // cancelled by client
+          LOG.debug("Cancelled by client{}", interruptInfo(interrupted), e);
+          throw new WebApplicationException("Request processing was cancelled", Response.Status.ACCEPTED);
+        }
+        else {
+          // other interruption
+          LOG.info("Interruption{}", interruptInfo(interrupted), e);
+          throw new WebApplicationException("Request processing was interrupted", Response.Status.ACCEPTED);
+        }
+      }
+      else {
+        // FIXME LOG.error("Client={}@{}/{}", servletRequest.getRemoteUser(), servletRequest.getRemoteAddr(), servletRequest.getRemoteHost(), e);
+        throw new WebApplicationException("Request processing was interrupted", Response.Status.INTERNAL_SERVER_ERROR);
+      }
+    }
+  }
+
   protected ServiceTunnelResponse doPost(ServiceTunnelRequest serviceRequest) {
     addNameToContext(() -> buildSpanName(serviceRequest));
     return doPostInternal(serviceRequest);
@@ -276,7 +350,14 @@ public class ServiceTunnelServlet extends AbstractHttpServlet {
    * Method invoked to deserialize a service request to be given to the service handler.
    */
   protected ServiceTunnelRequest deserializeServiceRequest() throws IOException, ClassNotFoundException {
-    return m_contentHandler.readRequest(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_REQUEST.get().getInputStream());
+    return deserializeServiceRequest(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_REQUEST.get().getInputStream());
+  }
+
+  /**
+   * Method invoked to deserialize a service request to be given to the service handler.
+   */
+  protected ServiceTunnelRequest deserializeServiceRequest(InputStream in) throws IOException, ClassNotFoundException {
+    return m_contentHandler.readRequest(in);
   }
 
   /**

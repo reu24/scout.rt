@@ -9,11 +9,16 @@
  */
 package org.eclipse.scout.rt.shared.servicetunnel.http;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+
+import jakarta.ws.rs.core.Response;
 
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.context.CorrelationId;
@@ -34,13 +39,11 @@ import org.eclipse.scout.rt.shared.servicetunnel.IServiceTunnelContentHandler;
 import org.eclipse.scout.rt.shared.servicetunnel.ServiceTunnelOptions;
 import org.eclipse.scout.rt.shared.servicetunnel.ServiceTunnelRequest;
 import org.eclipse.scout.rt.shared.servicetunnel.ServiceTunnelResponse;
+import org.eclipse.scout.rt.shared.servicetunnel.rest.ProcessResourceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpHeaders;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -57,6 +60,11 @@ public class HttpServiceTunnel extends AbstractServiceTunnel {
 
   public static final String TOKEN_AUTH_HTTP_HEADER = "X-ScoutAccessToken";
   public static final String ID_SIGNATURE_HTTP_HEADER = "X-ScoutIdSignature";
+
+  /**
+   * Marker header for session-less requests.
+   */
+  public static final String WITHOUT_SESSION_HEADER = "X-WithoutSession";
 
   private IServiceTunnelContentHandler m_contentHandler;
   private final URL m_serverUrl;
@@ -110,9 +118,9 @@ public class HttpServiceTunnel extends AbstractServiceTunnel {
    *     write post data (if required)
    * @throws IOException
    *     override this method to customize the creation of the {@link HttpResponse} see
-   *     {@link #addCustomHeaders(HttpRequest, ServiceTunnelRequest, byte[])}
+   *     {@link #addCustomHeaders(Map, ServiceTunnelRequest, byte[])}
    */
-  protected HttpResponse executeRequestInternal(ServiceTunnelRequest call, byte[] callData) throws IOException {
+  protected Response executeRequestInternal(ServiceTunnelRequest call, byte[] callData) throws IOException {
     // fast check of wrong URL's for this tunnel
     if (!"http".equalsIgnoreCase(getServerUrl().getProtocol()) && !"https".equalsIgnoreCase(getServerUrl().getProtocol())) {
       throw new IOException("URL '" + getServerUrl().toString() + "' is not supported by this tunnel ('" + getClass().getName() + "').");
@@ -122,17 +130,15 @@ public class HttpServiceTunnel extends AbstractServiceTunnel {
       throw new IllegalArgumentException("No target URL configured. Please specify a target URL in the config.properties using property '" + key + "'.");
     }
 
-    HttpRequestFactory requestFactory = getHttpTransportManager().getHttpRequestFactory();
-    HttpRequest request = requestFactory.buildPostRequest(getGenericUrl(), new ByteArrayContentEx(null, callData, false));
-    HttpHeaders headers = request.getHeaders();
-    headers.setCacheControl("no-cache");
-    headers.setContentType(getContentHandler().getContentType());
-    headers.put("Pragma", "no-cache");
-    addCustomHeaders(request, call, callData);
-    return request.execute();
+    Map<String, String> headers = new HashMap<>();
+    headers.put("Cache-Control", "no-cache"); // HTTP 1.1
+    headers.put("Pragma", "no-cache"); // HTTP 1.0
+    addCustomHeaders(headers, call, callData);
+
+    return BEANS.get(ProcessResourceClient.class).call(headers, new ByteArrayInputStream(callData));
   }
 
-  protected HttpResponse executeRequest(ServiceTunnelRequest call, byte[] callData) throws IOException {
+  protected Response executeRequest(ServiceTunnelRequest call, byte[] callData) throws IOException {
     Context parentContext = Context.current();
 
     if (!m_instrumenter.shouldStart(parentContext, call)) {
@@ -140,7 +146,7 @@ public class HttpServiceTunnel extends AbstractServiceTunnel {
     }
 
     Context context = m_instrumenter.start(parentContext, call);
-    HttpResponse response;
+    Response response;
     try (Scope ignored = context.makeCurrent()) {
       response = executeRequestInternal(call, callData);
     }
@@ -160,8 +166,8 @@ public class HttpServiceTunnel extends AbstractServiceTunnel {
   }
 
   /**
-   * @param httpRequest
-   *     request object
+   * @param headers
+   *     headers
    * @param call
    *     request information
    * @param callData
@@ -170,18 +176,18 @@ public class HttpServiceTunnel extends AbstractServiceTunnel {
    *     exception
    * @since 6.0
    */
-  protected void addCustomHeaders(HttpRequest httpRequest, ServiceTunnelRequest call, byte[] callData) throws IOException {
-    addSignatureHeader(httpRequest, callData);
-    addCorrelationId(httpRequest);
-    addOpenTelemetryContextHeader(httpRequest);
-    addIdSignatureHeader(httpRequest);
+  protected void addCustomHeaders(Map<String, String> headers, ServiceTunnelRequest call, byte[] callData) throws IOException {
+    addSignatureHeader(headers, callData);
+    addCorrelationId(headers);
+    addOpenTelemetryContextHeader(headers);
+    addIdSignatureHeader(headers);
   }
 
-  protected void addSignatureHeader(HttpRequest httpRequest, byte[] callData) throws IOException {
+  protected void addSignatureHeader(Map<String, String> headers, byte[] callData) throws IOException {
     try {
       DefaultAuthToken token = BEANS.get(DefaultAuthTokenSigner.class).createDefaultSignedToken(DefaultAuthToken.class);
       if (token != null) {
-        httpRequest.getHeaders().put(TOKEN_AUTH_HTTP_HEADER, token.toString());
+        headers.put(TOKEN_AUTH_HTTP_HEADER, token.toString());
       }
     }
     catch (RuntimeException e) {
@@ -192,31 +198,31 @@ public class HttpServiceTunnel extends AbstractServiceTunnel {
   /**
    * Method invoked to add the <em>correlation ID</em> as HTTP header to the request.
    */
-  protected void addCorrelationId(final HttpRequest httpRequest) {
+  protected void addCorrelationId(Map<String, String> headers) {
     final String cid = CorrelationId.CURRENT.get();
     if (cid != null) {
-      httpRequest.getHeaders().put(CorrelationId.HTTP_HEADER_NAME, cid);
+      headers.put(CorrelationId.HTTP_HEADER_NAME, cid);
     }
   }
 
-  protected void addOpenTelemetryContextHeader(final HttpRequest httpRequest) {
-    TextMapSetter<HttpRequest> setter = (carrier, key, value) -> {
+  protected void addOpenTelemetryContextHeader(Map<String, String> headers) {
+    TextMapSetter<Map<String, String>> setter = (carrier, key, value) -> {
       if (carrier != null) {
-        carrier.getHeaders().set(key, value);
+        headers.put(key, value);
       }
     };
     GlobalOpenTelemetry.get().getPropagators().getTextMapPropagator()
-        .inject(Context.current(), httpRequest, setter);
+        .inject(Context.current(), headers, setter);
   }
 
   /**
    * Adds the {@link HttpServiceTunnel#ID_SIGNATURE_HTTP_HEADER} if the current run context has the property {@link ServiceTunnelOptions#ID_SIGNATURE_PROP} set.
    */
-  protected void addIdSignatureHeader(final HttpRequest httpRequest) {
+  protected void addIdSignatureHeader(Map<String, String> headers) {
     if (Optional.ofNullable(RunContext.CURRENT.get())
         .map(rc -> rc.getPropertyOrDefault(ServiceTunnelOptions.ID_SIGNATURE_PROP, false))
         .orElse(false)) {
-      httpRequest.getHeaders().put(ID_SIGNATURE_HTTP_HEADER, Boolean.TRUE.toString());
+      headers.put(ID_SIGNATURE_HTTP_HEADER, Boolean.TRUE.toString());
     }
   }
 

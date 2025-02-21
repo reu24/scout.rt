@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2023 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -62,14 +62,23 @@ public class HttpRunContextProducer {
       contextToFill = RunContexts.copyCurrent(true);
     }
 
-    return contextToFill
+    RunContext runContext = contextToFill
         .withSubject(Subject.getSubject(AccessController.getContext()))
-        .withCorrelationId(currentCorrelationId(req))
-        .withThreadLocal(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_REQUEST, req)
-        .withThreadLocal(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_RESPONSE, resp)
-        .withDiagnostics(getServletDiagnosticsProviderFactory().getProviders(req, resp))
-        .withLocale(req.getLocale())
         .withTransactionScope(TransactionScope.REQUIRES_NEW);
+    if (req != null) { // FIXME
+      runContext = runContext
+          .withLocale(req.getLocale())
+          .withCorrelationId(currentCorrelationId(req))
+          .withThreadLocal(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_REQUEST, req);
+    }
+    if (resp != null) { // FIXME
+      runContext = runContext.withThreadLocal(IHttpServletRoundtrip.CURRENT_HTTP_SERVLET_RESPONSE, resp);
+    }
+    if (req != null && resp != null) {  // FIXME
+      runContext = runContext.withDiagnostics(getServletDiagnosticsProviderFactory().getProviders(req, resp));
+    }
+
+    return runContext;
   }
 
   protected String currentCorrelationId(HttpServletRequest req) {
