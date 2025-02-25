@@ -1094,6 +1094,8 @@ export * from './desktop/outline/pages/PageTileGridEventMap';
 export * from './desktop/outline/pages/PageTileGridSelectKeyStroke';
 export * from './desktop/outline/pages/AutoLeafPageWithNodes';
 export * from './desktop/outline/pages/AutoLeafPageWithNodesModel';
+export * from './desktop/outline/pages/PageDetailMenuContributor';
+export * from './desktop/outline/pages/ParentTablePageMenuContributor';
 export * from './desktop/outline/DetailTableTreeFilter';
 export * from './desktop/outline/Outline';
 export * from './desktop/outline/OutlineModel';

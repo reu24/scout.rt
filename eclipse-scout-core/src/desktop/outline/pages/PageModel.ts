@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2023 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Form, ObjectOrChildModel, ObjectOrModel, Outline, Page, Table, TreeNodeModel} from '../../../index';
+import {Form, ObjectOrChildModel, ObjectOrModel, ObjectOrType, Outline, Page, PageDetailMenuContributor, Table, TreeNodeModel} from '../../../index';
 
 export interface PageModel extends TreeNodeModel {
   parent?: Outline;
@@ -17,6 +17,10 @@ export interface PageModel extends TreeNodeModel {
   detailTableVisible?: boolean;
   detailForm?: ObjectOrChildModel<Form>;
   detailFormVisible?: boolean;
+  /**
+   * Additional detail menu contributors that will be added to the default contributors.
+   */
+  detailMenuContributors?: ObjectOrType<PageDetailMenuContributor>[];
   navigateButtonsVisible?: boolean;
   tableStatusVisible?: boolean;
   /**

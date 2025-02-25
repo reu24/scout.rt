@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2024 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -9,8 +9,8 @@
  */
 import {
   Action, arrays, DeferredGlassPaneTarget, Desktop, Device, EnumObject, EventDelegator, EventHandler, filters, focusUtils, Form, FullModelOf, graphics, HtmlComponent, icons, InitModelOf, inspector, KeyStroke, KeyStrokeContext, LayoutData,
-  LoadingSupport, LogicalGrid, ModelAdapter, ObjectOrChildModel, objects, ObjectType, ObjectWithType, Predicate, PropertyDecoration, PropertyEventEmitter, scout, ScrollbarInstallOptions, scrollbars, ScrollOptions, ScrollToOptions, Session,
-  SomeRequired, strings, texts, TreeVisitResult, WidgetEventMap, WidgetModel
+  LoadingSupport, LogicalGrid, ModelAdapter, ObjectOrChildModel, ObjectOrType, objects, ObjectWithType, Predicate, PropertyDecoration, PropertyEventEmitter, scout, ScrollbarInstallOptions, scrollbars, ScrollOptions, ScrollToOptions,
+  Session, SomeRequired, strings, texts, TreeVisitResult, WidgetEventMap, WidgetModel
 } from '../index';
 import $ from 'jquery';
 
@@ -1305,14 +1305,12 @@ export class Widget extends PropertyEventEmitter implements WidgetModel, ObjectW
    * @param logicalGrid an instance of {@link LogicalGrid} or a string representing the objectType of a logical grid.
    * @see WidgetModel.logicalGrid
    */
-  setLogicalGrid(logicalGrid: LogicalGrid | ObjectType<LogicalGrid>) {
+  setLogicalGrid(logicalGrid: ObjectOrType<LogicalGrid>) {
     this.setProperty('logicalGrid', logicalGrid);
   }
 
-  protected _setLogicalGrid(logicalGrid: LogicalGrid | ObjectType<LogicalGrid>) {
-    if (typeof logicalGrid === 'string' || typeof logicalGrid === 'function') {
-      logicalGrid = scout.create(logicalGrid);
-    }
+  protected _setLogicalGrid(logicalGrid: ObjectOrType<LogicalGrid>) {
+    logicalGrid = scout.ensure(logicalGrid);
     this._setProperty('logicalGrid', logicalGrid);
     this.invalidateLogicalGrid();
   }
