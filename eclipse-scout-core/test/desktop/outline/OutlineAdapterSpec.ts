@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2023 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {OutlineSpecHelper, TableSpecHelper, TreeSpecHelper} from '../../../src/testing';
-import {defaultValues, Outline, Page} from '../../../src';
+import {DataObjectInventory, defaultValues, ObjectFactory, ObjectUuidProvider, Outline, Page, PageParamDo, typeName} from '../../../src';
 
 describe('OutlineAdapter', () => {
   let session: SandboxSession;
@@ -318,6 +318,51 @@ describe('OutlineAdapter', () => {
     expect(node012.id).toBe('0_1_2');
     expect(node012['b']).toBe(234);
     expect(node012.remote).toBeTrue();
+  });
+
+  describe('pageParam', () => {
+    @typeName('pagespec.MyPageParam')
+    class MyPageParamDo extends PageParamDo {
+      prop: string;
+    }
+
+    beforeEach(() => {
+      DataObjectInventory.get().add(MyPageParamDo);
+      ObjectFactory.get().registerNamespace('pagespec', {MyPageParamDo});
+    });
+
+    afterEach(() => {
+      DataObjectInventory.get().remove(MyPageParamDo);
+      ObjectFactory.get().removeFromNamespace([MyPageParamDo]);
+    });
+
+    it('is deserialized', () => {
+      let model = {
+        id: ObjectUuidProvider.createUiId(),
+        session,
+        objectType: 'Outline',
+        nodes: [{
+          objectType: Page,
+          pageParam: {
+            _type: 'pagespec.MyPageParam',
+            prop: 'a'
+          },
+          childNodes: [{
+            objectType: Page,
+            pageParam: {
+              _type: 'UnknownPageParam',
+              prop: 'b'
+            }
+          }]
+        }]
+      };
+      let adapter = helper.createOutlineAdapter(model);
+      let outline = adapter.createWidget(model, session.desktop) as Outline;
+      expect(outline.nodes[0].pageParam).toBeInstanceOf(MyPageParamDo);
+      expect(outline.nodes[0].pageParam['prop']).toBe('a');
+      expect(outline.nodes[0].childNodes[0].pageParam).toBeInstanceOf(PageParamDo); // Will be deserialized by PageParamDoTypeResolver
+      expect(outline.nodes[0].childNodes[0].pageParam['prop']).toBe('b');
+    });
   });
 });
 
