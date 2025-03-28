@@ -38,7 +38,7 @@ export class DataObjectDeserializer implements DataObjectDeserializerModel, Obje
   }
 
   protected _deserializeObject<T extends object>(rawObj: Record<string, any>, metaData?: DoValueMetaData<T>): T {
-    const constructor = this._detectDataObjectType(rawObj, metaData) as Constructor<T>;
+    const constructor = this._resolveDataObjectType(rawObj, metaData) as Constructor<T>;
     const resultObj = this._createResultObject(constructor);
     const proto = Object.getPrototypeOf(constructor).prototype;
     Object.keys(rawObj)
@@ -49,12 +49,14 @@ export class DataObjectDeserializer implements DataObjectDeserializerModel, Obje
     return resultObj;
   }
 
-  protected _detectDataObjectType(rawObj: Record<string, any>, metaData: DoValueMetaData): Constructor {
-    let constructor = doValueMetaData.chooseDataObjectType(rawObj, metaData);
-    if (constructor) {
-      return constructor;
+  protected _resolveDataObjectType(rawObj: Record<string, any>, metaData: DoValueMetaData): Constructor {
+    for (const resolver of dataObjects.doTypeResolvers) {
+      const constructor = resolver.resolve(rawObj, metaData);
+      if (constructor) {
+        return constructor;
+      }
     }
-    return dataObjects.fallbackDoProviders.find(creator => creator.accept(rawObj))?.provide() || BaseDoEntity;
+    return BaseDoEntity;
   }
 
   protected _createResultObject<T extends object>(constructor: Constructor<T>): T {

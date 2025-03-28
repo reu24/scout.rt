@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  AnyDoEntity, ArrayDoNodeSerializer, arrays, BaseDoEntity, Constructor, DataObjectDeserializer, DataObjectDeserializerModel, DataObjectSerializer, DateDoNodeSerializer, DoEntity, DoNodeSerializer, doValueMetaData, FallbackDoProvider,
-  MapDoNodeSerializer, NumberDoNodeSerializer, objects, ObjectType, scout, SetDoNodeSerializer
+  AnyDoEntity, ArrayDoNodeSerializer, arrays, BaseDoEntity, Constructor, DataObjectDeserializer, DataObjectDeserializerModel, DataObjectSerializer, DateDoNodeSerializer, DefaultDoTypeResolver, DoEntity, DoNodeSerializer, DoTypeResolver,
+  doValueMetaData, MapDoNodeSerializer, NumberDoNodeSerializer, objects, ObjectType, scout, SetDoNodeSerializer
 } from '../index';
 
 /**
@@ -30,11 +30,15 @@ export const dataObjects = {
   ] as DoNodeSerializer<any>[],
 
   /**
-   * Editable array of {@link FallbackDoProvider} instances.
-   * By default, a {@link BaseDoEntity} is created if the data object class cannot be resolved, unless {@link DataObjectDeserializerModel.createPojoIfDoIsUnknown} is set to true.
-   * To use a specific {@link BaseDoEntity} class for unknown {@link DoEntity._type} values, add a custom fallback provider to this array.
+   * Editable array of {@link DoTypeResolver} instances.
+   *
+   * By default, the list only contains an instance of {@link DefaultDoTypeResolver}.
+   *
+   * The list may be modified to add a custom resolver. This may be useful for example in the following scenario:
+   * Normally, a {@link BaseDoEntity} is created if the data object class cannot be resolved, unless {@link DataObjectDeserializerModel.createPojoIfDoIsUnknown} is set to true.
+   * To use a specific {@link BaseDoEntity} class for unknown {@link DoEntity._type} values, a custom resolver can be added.
    */
-  fallbackDoProviders: [] as FallbackDoProvider[],
+  doTypeResolvers: [new DefaultDoTypeResolver()] as DoTypeResolver[],
 
   /**
    * Serializes the given value and converts it to a JSON string using {@link JSON.stringify}.

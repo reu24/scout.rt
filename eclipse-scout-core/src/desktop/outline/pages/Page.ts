@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  arrays, BaseDoEntity, BookmarkAdapter, BookmarkTableRowIdentifierDo, ButtonTile, ChildModelOf, Constructor, dataObjects, EnumObject, Event, EventHandler, EventListener, EventMapOf, EventModel, EventSupport, FallbackDoProvider, Form,
+  arrays, BaseDoEntity, BookmarkAdapter, BookmarkTableRowIdentifierDo, ButtonTile, ChildModelOf, Constructor, dataObjects, DoTypeResolver, EnumObject, Event, EventHandler, EventListener, EventMapOf, EventModel, EventSupport, Form,
   HtmlComponent, icons, InitModelOf, inspector, Menu, MenuBar, ObjectOrChildModel, ObjectOrType, ObjectUuidBuilder, ObjectUuidProvider, ObjectWithObjectUuidBuilder, ObjectWithUuid, Outline, PageDetailMenuContributor, PageEventMap,
   PageIdDummyPageParamDo, PageModel, ParentTablePageMenuContributor, PropertyChangeEvent, RequiredUnlessNotSubclass, scout, SomeRequired, strings, Table, TableRow, TableRowClickEvent, TileOutlineOverview, TileOverviewForm, TreeNode, Widget
 } from '../../../index';
@@ -712,21 +712,22 @@ export class PageParamDo extends BaseDoEntity {
 }
 
 /**
- * {@link PageParamDo}s for Scout JS pages don't exist on server side but bookmarks may contain them using the generic DoEntity type.
- * This fallback creator ensures a real {@link PageParamDo} instance will be created whenever a data object is deserialized whose type ends with 'PageParam'.
+ * If a specific {@link PageParamDo} exists on server side but there is no equivalent on JS side, a {@link BaseDoEntity} would be created.
+ * This resolver ensures a real {@link PageParamDo} instance will be created instead of a {@link BaseDoEntity}
+ * whenever a data object is deserialized whose type ends with 'PageParam', if there is no explicit page param found.
+ *
  * This guarantees all page params are actual instances of {@link PageParamDo}.
  */
-export class PageParamFallbackDoCreator implements FallbackDoProvider {
-  accept(rawObj: Record<string, any>): boolean {
-    return rawObj?._type?.endsWith('PageParam');
-  }
-
-  provide(): Constructor<BaseDoEntity> {
-    return PageParamDo;
+export class PageParamDoTypeResolver implements DoTypeResolver {
+  resolve(rawObj: Record<string, any>): Constructor<BaseDoEntity> {
+    if (rawObj?._type?.endsWith('PageParam')) {
+      return PageParamDo;
+    }
+    return null;
   }
 }
 
-dataObjects.fallbackDoProviders.push(new PageParamFallbackDoCreator());
+dataObjects.doTypeResolvers.push(new PageParamDoTypeResolver());
 
 /**
  * Makes the pageParam of the given page required if the page declares a concrete page param (= a subclass of {@link PageParamDo}).
