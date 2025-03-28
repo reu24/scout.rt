@@ -303,8 +303,6 @@ export const ajax = {
     const ajaxOptions = $.extend({}, {cache: false}, options);
     const ajaxCallModel = $.extend(true, {}, {ajaxOptions}, model);
 
-    return scout.create(AjaxCall, ajaxCallModel, {
-      ensureUniqueId: false
-    });
+    return scout.create(AjaxCall, ajaxCallModel);
   }
 };

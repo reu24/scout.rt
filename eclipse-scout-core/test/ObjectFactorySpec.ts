@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Action, Button, NumberField, ObjectFactory, scout, StringField} from '../src/index';
+import {Action, Button, ensureId, NumberField, ObjectFactory, ObjectModelWithId, ObjectUuidProvider, ObjectWithId, scout, StringField} from '../src/index';
 import {LocaleSpecHelper} from '../src/testing/index';
 import {InitModelOf} from '../src/scout';
 
@@ -60,7 +60,7 @@ describe('ObjectFactory', () => {
     expect(object.objectType).toBe('StringField');
   });
 
-  it('puts the object type to the resulting object', () => {
+  it('ignores the object type in the model', () => {
     let model = {
       parent: session.desktop,
       objectType: 'NumberField' // this objectType will be ignored
@@ -108,6 +108,77 @@ describe('ObjectFactory', () => {
         objectType: StringField
       });
     }).toThrow();
+  });
+
+  describe('id', () => {
+    let factory: ObjectFactory;
+
+    @ensureId()
+    class ObjWithId implements ObjectWithId {
+      id: string;
+    }
+
+    @ensureId()
+    class ObjWithInitAndId implements ObjectWithId {
+      id: string;
+
+      init(model: ObjectModelWithId) {
+        this.id = model.id;
+      }
+    }
+
+    @ensureId(false)
+    class ExtendedObjWithInitAndDisabledId extends ObjWithInitAndId {
+    }
+
+    class ObjWithoutId {
+    }
+
+    beforeEach(() => {
+      factory = new ObjectFactory();
+      factory.registerNamespace('osSpecNs1', {ObjWithId, ObjWithInitAndId, ObjWithoutId});
+    });
+
+    it('is set to the resulting object if ensureId decorator is present', () => {
+      let object = ObjectFactory.get().create(ObjWithId, {
+        parent: session.desktop
+      });
+      expect(object instanceof ObjWithId).toBe(true);
+      expect(object.id).toBeDefined();
+      expect(object.id).not.toBe(ObjectUuidProvider.UI_ID_REQUIRED);
+
+      let objectWithInit = ObjectFactory.get().create(ObjWithInitAndId, {
+        parent: session.desktop
+      });
+      expect(objectWithInit instanceof ObjWithInitAndId).toBe(true);
+      expect(objectWithInit.id).toBeDefined();
+      expect(objectWithInit.id).not.toBe(ObjectUuidProvider.UI_ID_REQUIRED);
+    });
+
+    it('does not override id passed by the model', () => {
+      let object = ObjectFactory.get().create(ObjWithInitAndId, {
+        parent: session.desktop,
+        id: '123'
+      });
+      expect(object instanceof ObjWithInitAndId).toBe(true);
+      expect(object.id).toBe('123');
+    });
+
+    it('is not set to the resulting object if ensureId decorator is not present', () => {
+      let object = ObjectFactory.get().create(ObjWithoutId, {
+        parent: session.desktop
+      });
+      expect(object instanceof ObjWithoutId).toBe(true);
+      expect(object['id']).toBeUndefined();
+    });
+
+    it('is not set to the resulting object if ensureId decorator is disabled', () => {
+      let object = ObjectFactory.get().create(ExtendedObjWithInitAndDisabledId, {
+        parent: session.desktop
+      });
+      expect(object instanceof ExtendedObjWithInitAndDisabledId).toBe(true);
+      expect(object['id']).toBeUndefined();
+    });
   });
 
   describe('uses the registered factory to create the object', () => {
