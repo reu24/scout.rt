@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2024 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -381,6 +381,12 @@ export class Page extends TreeNode implements PageModel {
     this.$node.toggleClass('compact-root', this.compactRoot);
     this.$node.toggleClass('has-tile-overview', this.showTileOverview ||
       (this.compactRoot && this.getOutline().detailContent instanceof TileOutlineOverview));
+
+    // XXX bsh [js-bookmark] REMOVE
+    if (this.objectType !== 'Page') {
+      // @ts-expect-error
+      this.$node.attr('data-js-only', this.modelClass ? 'hybrid' : 'true');
+    }
   }
 
   // see Java: AbstractPage#pageActivatedNotify

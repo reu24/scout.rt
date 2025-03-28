@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2023 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -415,3 +415,23 @@
 }
 
 /* NOSONAR */
+// XXX bsh [js-bookmark] REMOVE
+.tree-node[data-js-only] > .text::after {
+  content: 'JS';
+  font-size: 10px;
+  padding: 2px 5px;
+  margin-left: 10px;
+  position: absolute;
+  pointer-events: none;
+  border-radius: 3px;
+  color: @highlight-inverted-background-color;
+  background-color: @text-inverted-color;
+  border: 1px solid @highlight-inverted-background-color;
+}
+
+.tree-node[data-js-only=hybrid] > .text::after {
+  content: 'HY';
+  color: @text-inverted-color;
+  background-color: @highlight-inverted-background-color;
+  border: 1px solid transparent;
+}

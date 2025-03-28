@@ -268,7 +268,11 @@ export class OutlineAdapter extends TreeAdapter {
         id: nodeModel.id,
         parent: nodeModel.parent,
         owner: nodeModel.owner,
-        objectType: nodeModel.jsPageObjectType
+        objectType: nodeModel.jsPageObjectType,
+        // XXX bsh [js-bookmark] REMOVE
+        pageParam: nodeModel.pageParam,
+        classId: nodeModel.classId,
+        modelClass: nodeModel.modelClass
       };
 
       if (nodeModel.jsPageModel) {
