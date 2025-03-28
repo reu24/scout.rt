@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {AbstractConstructor, BaseDoEntity, Constructor, FullModelOf, InitModelOf, ModelAdapter, ModelOf, ObjectModel, objects, ObjectUuidProvider, scout, TableRow, TreeNode, TypeDescriptor, TypeDescriptorOptions, Widget} from './index';
+import {AbstractConstructor, BaseDoEntity, Constructor, FullModelOf, InitModelOf, ModelOf, ObjectModel, ObjectModelWithId, objects, ObjectUuidProvider, scout, TypeDescriptor, TypeDescriptorOptions} from './index';
 import $ from 'jquery';
 
 export type ObjectCreator = (model?: any) => object;
@@ -23,6 +23,8 @@ export interface ObjectFactoryOptions extends TypeDescriptorOptions {
    * Controls if the resulting object should be assigned the attribute "id" if it is not defined.
    * If the created object has an init() function, we also set the property 'id' on the model object to allow the init() function to copy the attribute from the model to the scoutObject.
    * Default is true.
+   *
+   * @deprecated will be removed in a future release, use {@link ensureId} instead
    */
   ensureUniqueId?: boolean;
 }
@@ -143,7 +145,7 @@ export class ObjectFactory {
   create<T extends object>(objectTypeOrModel: ObjectType<T> | FullModelOf<T>, modelOrOptions?: InitModelOf<T>, options?: ObjectFactoryOptions): T {
     // Normalize arguments
     let objectType: ObjectType<T>;
-    let model: ObjectModel<T>;
+    let model: ObjectModel<T> & ObjectModelWithId;
     if (typeof objectTypeOrModel === 'string' || typeof objectTypeOrModel === 'function') {
       options = options || {};
       model = modelOrOptions;
@@ -162,11 +164,10 @@ export class ObjectFactory {
 
     // Create object
     const scoutObject = this._createObjectByType(objectType, options);
-    const ensureUniqueId = this._ensureUniqueId(scoutObject, options);
     const ensureObjectType = this._ensureObjectType(scoutObject);
     if (objects.isFunction(scoutObject.init)) {
       if (model) {
-        if (model.id === undefined && ensureUniqueId) {
+        if (model.id === undefined && this._ensureUniqueId(scoutObject, options)) {
           model.id = ObjectUuidProvider.createUiId();
         }
         if (ensureObjectType) {
@@ -176,7 +177,7 @@ export class ObjectFactory {
       scoutObject.init(model);
     }
 
-    if (scoutObject.id === undefined && ensureUniqueId) {
+    if (this._ensureUniqueId(scoutObject, options)) {
       scoutObject.id = ObjectUuidProvider.createUiId();
     }
     if (scoutObject.objectType === undefined && ensureObjectType) {
@@ -191,8 +192,7 @@ export class ObjectFactory {
   }
 
   protected _ensureUniqueId(scoutObject: any, options?: ObjectFactoryOptions): boolean {
-    // FIXME bsh [js-bookmark] How can we determine whether an ID should be generated? Is this even needed for widgets? (TreeNodes and TableRows seem to need it because of Maps in Tree/Table, but this could probably changed to ES6-Maps)
-    return scout.nvl(options.ensureUniqueId, scoutObject instanceof Widget || scoutObject instanceof TreeNode || scoutObject instanceof TableRow || scoutObject instanceof ModelAdapter);
+    return scout.nvl(options.ensureUniqueId, scoutObject.id === ObjectUuidProvider.UI_ID_REQUIRED);
   }
 
   /**
@@ -363,3 +363,29 @@ export class ObjectFactory {
 }
 
 let objectFactory = new ObjectFactory();
+
+/**
+ * Class decorator function.
+ *
+ * It writes {@link ObjectUuidProvider.UI_ID_REQUIRED} to the id attribute to indicate the {@link ObjectFactory} needs to assign a unique id to the object unless it already has an id.
+ *
+ * It is possible to disable the behavior by extending from the class having the ensureId decorator and adding the decorator with the parameter false to the subclass.
+ *
+ * @param ensure true to assign a unique id if necessary (default), false if not.
+ */
+export function ensureId(ensure = true) {
+  return <T extends Constructor | AbstractConstructor>(BaseClass: T) => class extends BaseClass {
+    constructor(...args: any[]) {
+      super(...args);
+      if (ensure) {
+        if (objects.isNullOrUndefined(this['id'])) {
+          this['id'] = ObjectUuidProvider.UI_ID_REQUIRED;
+        }
+      } else {
+        if (this['id'] === ObjectUuidProvider.UI_ID_REQUIRED) {
+          this['id'] = null;
+        }
+      }
+    }
+  };
+}

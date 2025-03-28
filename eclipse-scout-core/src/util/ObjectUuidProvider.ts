@@ -36,6 +36,10 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    */
   static UUID_FALLBACK_DELIMITER = '@';
   /**
+   * Marker for the id attribute to show the {@link ObjectFactory} an id is required.
+   */
+  static UI_ID_REQUIRED = 'UI_ID_REQUIRED';
+  /**
    * Set of widgets which will be skipped when building the uuidPath. A widget is skipped if its class is exactly one of these (NOT instanceof!).
    */
   static UuidPathSkipWidgets: Set<new() => Widget> = new Set<new() => Widget>();
