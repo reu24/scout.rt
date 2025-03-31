@@ -373,7 +373,7 @@ let objectFactory = new ObjectFactory();
  *
  * @param ensure true to assign a unique id if necessary (default), false if not.
  */
-export function ensureId(ensure?: boolean) {
+export function ensureId(ensure = true) {
   return <T extends Constructor | AbstractConstructor>(BaseClass: T) => class extends BaseClass {
     constructor(...args: any[]) {
       super(...args);
