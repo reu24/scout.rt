@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2024 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -40,7 +40,7 @@ export class DesktopAdapter extends ModelAdapter {
   }
 
   protected _onWidgetFormActivate(event: DesktopFormActivateEvent) {
-    if (event.form && !event.form.modelAdapter) {
+    if (event.form && !ModelAdapter.getModelAdapterForWidget(event.form, true)) {
       return; // Ignore ScoutJS forms
     }
     this._sendFormActivate(event.form);
@@ -48,7 +48,7 @@ export class DesktopAdapter extends ModelAdapter {
 
   protected _sendFormActivate(form: Form) {
     let eventData = {
-      formId: form ? form.modelAdapter.id : null
+      formId: ModelAdapter.getModelAdapterForWidget(form, true)?.id
     };
 
     this._send('formActivate', eventData, {
@@ -261,6 +261,10 @@ export class DesktopAdapter extends ModelAdapter {
       this._initThemeOrig();
     }
   }
+}
+
+export interface FormWithModelAdapterId extends Form {
+  __modelAdapterId?: string;
 }
 
 App.addListener('bootstrap', DesktopAdapter.modifyDesktopPrototype);

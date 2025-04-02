@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2024 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -116,6 +116,7 @@ export class FormController extends DisplayChildController {
     } else {
       this._activateDialog(form);
     }
+    this.session.desktop._setFormActivated(form);
   }
 
   protected _renderView(view: Form, register: boolean, position?: number, selectView?: boolean) {
@@ -335,18 +336,18 @@ export class FormController extends DisplayChildController {
   }
 
   protected _registerDialog(dialog: Form) {
-    this._registerChild(dialog, this.displayParent.dialogs, 'dialogs');
+    this._registerChild(dialog, 'dialogs');
   }
 
   protected _unregisterDialog(dialog: Form) {
-    this._unregisterChild(dialog, this.displayParent.dialogs, 'dialogs');
+    this._unregisterChild(dialog, 'dialogs');
   }
 
   protected _registerView(view: Form, position: number) {
-    this._registerChild(view, this.displayParent.views, 'views', position);
+    this._registerChild(view, 'views', position);
   }
 
   protected _unregisterView(view: Form) {
-    this._unregisterChild(view, this.displayParent.views, 'views');
+    this._unregisterChild(view, 'views');
   }
 }

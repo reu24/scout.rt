@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2024 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -468,6 +468,18 @@ export class ModelAdapter extends EventEmitter implements ModelAdapterModel, Mod
   }
 
   /**
+   * Gets the {@link ModelAdapter} for the given {@link Widget}. The method checks for classic {@link ModelAdapter}s and if the flag `includeHybridModelAdapter` is set to `true` also for hybrid {@link ModelAdapter}s.
+   */
+  static getModelAdapterForWidget(widget: Widget, includeHybridModelAdapter?: boolean): ModelAdapter {
+    if (widget?.modelAdapter) {
+      return widget.modelAdapter;
+    }
+    if (includeHybridModelAdapter) {
+      return (widget as HybridWidget)?.__hybridModelAdapter;
+    }
+  }
+
+  /**
    * Static method to modify the prototype of Widget.
    */
   static modifyWidgetPrototype(event: Event) {
@@ -507,6 +519,13 @@ export interface ModelAdapterLike {
   destroy(): void;
 
   exportAdapterData(adapterData: AdapterData): AdapterData;
+}
+
+/**
+ * A hybrid widget, i.e. a widget implemented in Scout JS with a wrapper in Scout Classic, is not marked with the property modelAdapter but with __hybridModelAdapter.
+ */
+export interface HybridWidget extends Widget {
+  __hybridModelAdapter?: ModelAdapter;
 }
 
 export interface ModelAdapterSendOptions<Data> {
