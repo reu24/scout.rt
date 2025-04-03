@@ -235,7 +235,7 @@ describe('Page', () => {
     let pageWithDetailFormAndTableModel;
 
     class MenuContributor extends PageDetailMenuContributor {
-      override contribute(originalMenus: Menu[], detailContent: MenuOwner) {
+      override contribute(originalMenus: Menu[], detailContent: MenuOwner): Menu[] {
         return [...originalMenus, scout.create(Menu, {
           parent: detailContent,
           text: 'contributed-menu'
@@ -318,7 +318,7 @@ describe('Page', () => {
 
     it('can contribute new menus by cloning existing menus including their child menus', () => {
       class OutlineMenuContributor extends PageDetailMenuContributor {
-        override contribute(originalMenus: Menu[], detailContent: MenuOwner) {
+        override contribute(originalMenus: Menu[], detailContent: MenuOwner): Menu[] {
           return [...this._cloneMenus(detailContent.findParent(Outline).menus, detailContent), ...originalMenus];
         }
       }

@@ -11,7 +11,7 @@ import {Menu, MenuOwner, menus, PageDetailMenuContributor, Table, Widget} from '
 
 export class ParentTablePageMenuContributor extends PageDetailMenuContributor {
 
-  contribute(originalMenus: Menu[], detailContent: MenuOwner) {
+  contribute(originalMenus: Menu[], detailContent: MenuOwner): Menu[] {
     const parentTablePageMenus = this._computeParentTablePageMenus(detailContent);
     return [...parentTablePageMenus, ...originalMenus];
   }

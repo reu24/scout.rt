@@ -29,7 +29,7 @@ export abstract class PageDetailMenuContributor implements ObjectWithType {
     this.page = page;
   }
 
-  abstract contribute(originalMenus: Menu[], detailContent: MenuOwner);
+  abstract contribute(originalMenus: Menu[], detailContent: MenuOwner): Menu[];
 
   /**
    * Clones the given menus including their children and attaches the clones to the given parent.
