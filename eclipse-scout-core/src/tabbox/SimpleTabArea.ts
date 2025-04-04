@@ -32,6 +32,7 @@ export class SimpleTabArea<TView extends SimpleTabView = SimpleTabView> extends 
     this.displayStyle = SimpleTabArea.DisplayStyle.DEFAULT;
     this.tabs = [];
     this._selectedViewTab = null;
+    this._addWidgetProperties(['tabs']);
   }
 
   protected override _init(model: InitModelOf<this>) {

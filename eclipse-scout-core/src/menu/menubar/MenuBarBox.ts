@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {aria, arrays, HtmlComponent, Menu, MenuBarBoxEventMap, MenuBarBoxLayout, MenuBarBoxModel, ObjectOrChildModel, TooltipPosition, Widget} from '../../index';
+import {aria, arrays, HtmlComponent, Menu, MenuBarBoxEventMap, MenuBarBoxLayout, MenuBarBoxModel, ObjectOrChildModel, ObjectUuidProvider, TooltipPosition, Widget} from '../../index';
 
 export class MenuBarBox extends Widget implements MenuBarBoxModel {
   declare model: MenuBarBoxModel;
@@ -87,3 +87,5 @@ export class MenuBarBox extends Widget implements MenuBarBoxModel {
     this.menuItems.forEach(item => item.setTooltipPosition(this.tooltipPosition));
   }
 }
+
+ObjectUuidProvider.uuidPathSkipWidgets.add(MenuBarBox);

@@ -310,4 +310,4 @@ export class TabBox extends CompositeField implements TabBoxModel {
 
 export type TabBoxMenuType = EnumObject<typeof TabBox.MenuType>;
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(TabBox);
+ObjectUuidProvider.uuidPathSkipWidgets.add(TabBox);

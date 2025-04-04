@@ -535,4 +535,4 @@ export class RadioButtonGroup<TValue> extends ValueField<TValue> implements Radi
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(RadioButtonGroup);
+ObjectUuidProvider.uuidPathSkipWidgets.add(RadioButtonGroup);

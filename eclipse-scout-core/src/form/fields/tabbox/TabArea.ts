@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  arrays, EllipsisMenu, EnumObject, EventHandler, HtmlComponent, InitModelOf, KeyStrokeContext, PropertyChangeEvent, scout, SomeRequired, strings, Tab, TabAreaEventMap, TabAreaLayout, TabAreaLeftKeyStroke, TabAreaModel,
+  arrays, EllipsisMenu, EnumObject, EventHandler, HtmlComponent, InitModelOf, KeyStrokeContext, ObjectUuidProvider, PropertyChangeEvent, scout, SomeRequired, strings, Tab, TabAreaEventMap, TabAreaLayout, TabAreaLeftKeyStroke, TabAreaModel,
   TabAreaRightKeyStroke, TabBox, TabItem, Widget
 } from '../../../index';
 
@@ -307,3 +307,5 @@ export class TabArea extends Widget implements TabAreaModel {
     }
   }
 }
+
+ObjectUuidProvider.uuidPathSkipWidgets.add(TabArea);
