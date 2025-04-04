@@ -32,7 +32,6 @@ import org.eclipse.scout.rt.api.data.table.TableColumnId;
 import org.eclipse.scout.rt.api.data.table.TableId;
 import org.eclipse.scout.rt.client.prefs.userfilter.UserFilterStateHelper;
 import org.eclipse.scout.rt.client.ui.ClientUIPreferences;
-import org.eclipse.scout.rt.client.ui.ObjectIdProvider;
 import org.eclipse.scout.rt.client.ui.basic.table.ColumnSet;
 import org.eclipse.scout.rt.client.ui.basic.table.ITable;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.IColumn;
@@ -43,6 +42,7 @@ import org.eclipse.scout.rt.dataobject.mapping.DoEntityMappings;
 import org.eclipse.scout.rt.platform.ApplicationScoped;
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.Order;
+import org.eclipse.scout.rt.platform.reflect.ConfigurationUtility;
 import org.eclipse.scout.rt.platform.util.BooleanUtility;
 import org.eclipse.scout.rt.platform.util.CollectionUtility;
 import org.eclipse.scout.rt.platform.util.LazyValue;
@@ -66,7 +66,10 @@ public class TablePreferencesClientHelper {
   }
 
   public TableColumnId getColumnId(IColumn<?> column) {
-    return TableColumnId.of(BEANS.get(ObjectIdProvider.class).getId(column));
+    // The UUID of the column is only valid within its table. Therefore, only use the own ClassId.
+    // Accordingly, column.classId() cannot be used here as this would include the UUID of the containing table.
+    // Also do not use column.getColumnId() as this is less refactoring safe.
+    return TableColumnId.of(ConfigurationUtility.getAnnotatedClassIdWithFallback(column.getClass()));
   }
 
   /**

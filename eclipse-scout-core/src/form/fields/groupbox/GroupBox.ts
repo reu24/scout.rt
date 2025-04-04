@@ -866,4 +866,4 @@ export class GroupBox extends CompositeField implements GroupBoxModel {
 export type GroupBoxBorderDecoration = EnumObject<typeof GroupBox.BorderDecoration>;
 export type GroupBoxMenuBarPosition = EnumObject<typeof GroupBox.MenuBarPosition>;
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(GroupBox);
+ObjectUuidProvider.uuidPathSkipWidgets.add(GroupBox);

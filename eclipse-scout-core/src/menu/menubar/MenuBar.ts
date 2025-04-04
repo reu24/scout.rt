@@ -9,7 +9,7 @@
  */
 import {
   aria, arrays, EllipsisMenu, EnumObject, Event, EventHandler, GroupBoxMenuItemsOrder, HtmlComponent, InitModelOf, keys, KeyStroke, KeyStrokeContext, Menu, MenuBarBox, MenuBarEventMap, MenuBarLayout, MenuBarLeftKeyStroke, MenuBarModel,
-  MenuBarRightKeyStroke, MenuDestinations, MenuFilter, MenuOrder, menus, ObjectOrChildModel, OrderedMenuItems, PropertyChangeEvent, scout, TooltipPosition, Widget, widgets
+  MenuBarRightKeyStroke, MenuDestinations, MenuFilter, MenuOrder, menus, ObjectOrChildModel, ObjectUuidProvider, OrderedMenuItems, PropertyChangeEvent, scout, TooltipPosition, Widget, widgets
 } from '../../index';
 
 export type MenuBarEllipsisPosition = EnumObject<typeof MenuBar.EllipsisPosition>;
@@ -465,3 +465,5 @@ export class MenuBar extends Widget implements MenuBarModel {
     return menus.flatTopLevelActions(this.orderedMenuItems.all);
   }
 }
+
+ObjectUuidProvider.uuidPathSkipWidgets.add(MenuBar);

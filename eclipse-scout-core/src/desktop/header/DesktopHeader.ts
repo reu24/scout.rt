@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  aria, Desktop, DesktopHeaderEventMap, DesktopHeaderLayout, DesktopHeaderModel, DesktopLogo, DesktopTabArea, DesktopToolBox, Event, EventHandler, Form, HtmlComponent, InitModelOf, Menu, MenuBar, ObjectOrChildModel, OutlineContent,
-  PropertyChangeEvent, scout, ViewButtonBox, Widget
+  aria, Desktop, DesktopHeaderEventMap, DesktopHeaderLayout, DesktopHeaderModel, DesktopLogo, DesktopTabArea, DesktopToolBox, Event, EventHandler, Form, HtmlComponent, InitModelOf, Menu, MenuBar, ObjectOrChildModel, ObjectUuidProvider,
+  OutlineContent, PropertyChangeEvent, scout, ViewButtonBox, Widget
 } from '../../index';
 
 export class DesktopHeader extends Widget implements DesktopHeaderModel {
@@ -383,3 +383,5 @@ export class DesktopHeader extends Widget implements DesktopHeaderModel {
     }
   }
 }
+
+ObjectUuidProvider.uuidPathSkipWidgets.add(DesktopHeader);
