@@ -342,13 +342,15 @@ describe('OutlineAdapter', () => {
         session,
         objectType: 'Outline',
         nodes: [{
-          objectType: Page,
+          objectType: 'Page',
+          nodeType: Page.NodeType.NODES,
           pageParam: {
             _type: 'pagespec.MyPageParam',
             prop: 'a'
           },
           childNodes: [{
-            objectType: Page,
+            objectType: 'Page',
+            nodeType: Page.NodeType.TABLE,
             pageParam: {
               _type: 'UnknownPageParam',
               prop: 'b'
