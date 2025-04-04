@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Constructor, Desktop, NullWidget, ObjectFactory, ObjectModel, ObjectWithType, ObjectWithUuid, scout, SomeRequired, strings, Widget} from '../index';
+import {Constructor, Desktop, NullWidget, numbers, ObjectFactory, ObjectModel, ObjectWithType, ObjectWithUuid, scout, SomeRequired, strings, Widget} from '../index';
 
 /**
  * Helper class to extract IDs of objects and to compute uuidPaths.
@@ -32,17 +32,20 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    */
   static UUID_PATH_DELIMITER = '|'; // "-" is used by UUID, "." by ClassNames, "_" by ClassId path from Java (see ITypeWithClassId.ID_CONCAT_SYMBOL).
   /**
-   * Delimiter used between id and objectType in case a fallback uuid is created and both attributes are available.
-   */
-  static UUID_FALLBACK_DELIMITER = '@';
-  /**
    * Marker for the id attribute to show the {@link ObjectFactory} an id is required.
    */
   static UI_ID_REQUIRED = 'UI_ID_REQUIRED';
   /**
    * Set of widgets which will be skipped when building the uuidPath. A widget is skipped if its class is exactly one of these (NOT instanceof!).
+   *
+   * A widget may be skipped if it is not relevant for computing the uuidPath, e.g. if it is only a layouting component.
+   * For example: A group box is skipped because the id or uuid of a widget is normally unique inside a form so the group box would unnecessarily enlarge the uuidPath.
+   * Also, if the widget is moved into another group box, the uuidPath won't be affected.
+   * If the group box is extracted into a separate widget and gets its own class (aka. template field)
+   * it must not be skipped anymore because this template can be used multiple times on the same form and must therefore be part of the uuidPath.
+   * This template use case is the reason why the subclasses of the registered widgets are not considered.
    */
-  static UuidPathSkipWidgets: Set<new() => Widget> = new Set<new() => Widget>();
+  static UuidPathSkipWidgets: Set<Constructor<Widget>> = new Set<Constructor<Widget>>();
   /** use {@link createUiId} to generate a new ID */
   protected static _uniqueIdSeqNo = 0;
   protected static UI_ID_PATTERN = new RegExp('^' + ObjectUuidProvider.UI_ID_PREFIX + '\\d+$');
@@ -55,7 +58,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   /**
    * Computes a path starting with the {@link uuid} of this object. If a parent is available, its {@link uuidPath} is appended to the right (recursively).
    * {@link UUID_PATH_DELIMITER} is used as delimiter between the segments.
-   * By default, if the object is a remote (Scout Classic) object having a classId, its value is directly returned without consulting the parent has classIds typically already include its parents.
+   * By default, if the object is a remote (Scout Classic) object having a classId, its value is directly returned without appending the parent path because classIds typically already include its parents.
    *
    * @param object The object for which the uuidPath should be computed.
    * @param options Optional {@link UuidPathOptions} controlling the computation of the path.
@@ -76,7 +79,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
       return uuid;
     }
     parent = this._findUuidPathParent(parent);
-    return strings.join(ObjectUuidProvider.UUID_PATH_DELIMITER, uuid, parent?.uuidPath(options?.useFallback));
+    return strings.join(ObjectUuidProvider.UUID_PATH_DELIMITER, uuid, parent?.buildUuidPath(options?.useFallback));
   }
 
   protected _findUuidPathParent(parent: Widget): Widget {
@@ -93,20 +96,17 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     if (ObjectUuidProvider.isUuidPathSkipWidget(parent) || parent instanceof Desktop || parent instanceof NullWidget) {
       return false; // always uninteresting parents, event if they have a stable ID.
     }
-    if (parent.uuid || parent.classId) {
-      return true; // accept element if it has a stable id
-    }
-    // only relevant for fallback case: don't use UI generated Ids.
-    return parent.id && !ObjectUuidProvider.isUiId(parent.id);
+    return true;
   }
 
   /**
    * Computes an uuid for the given object. The result may be a 'classId' for remote objects (Scout Classic) or an 'uuid' for Scout JS elements (if available).
    * If the fallback is enabled, an id might be created using the 'id' property and 'objectType' property.
-   * @param includeFallback Optional boolean specifying if a fallback identifier may be created in case an object has no specific identifier set. The fallback may be less stable. Default is true.
+   *
+   * @param useFallback Optional boolean specifying if a fallback identifier may be created in case an object has no specific identifier set. The fallback may be less stable. Default is true.
    * @returns the uuid for the object or null.
    */
-  uuid(object: ObjectUuidSource, includeFallback?: boolean): string {
+  uuid(object: ObjectUuidSource, useFallback?: boolean): string {
     if (!object) {
       return null;
     }
@@ -122,20 +122,41 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     }
 
     // Fallback
-    if (!scout.nvl(includeFallback, true) || ObjectUuidProvider.isUiId(object.id)) {
+    if (!scout.nvl(useFallback, true)) {
       return null; // no fallback
     }
+    if (this._considerId(object)) {
+      return object.id;
+    }
     let objectType;
-    if (object.objectType && typeof object.objectType === 'string') {
+    if (typeof object.objectType === 'string') {
       objectType = object.objectType;
     } else {
-      objectType = ObjectFactory.get().getObjectType(object.constructor as Constructor);
+      const objectFactory = ObjectFactory.get();
+      objectType = objectFactory.getObjectType(object.constructor as Constructor) || objectFactory.getObjectType(object.objectType);
     }
-    let fallbackId = strings.join(ObjectUuidProvider.UUID_FALLBACK_DELIMITER, object.id, objectType);
-    if (!fallbackId) {
-      return null; // don't return empty strings
+    if (objectType) {
+      return objectType;
     }
-    return fallbackId;
+    return null;
+  }
+
+  protected _considerId(object: ObjectUuidSource) {
+    let id = object.id;
+    if (strings.empty(id)) {
+      return false;
+    }
+    if (id === ObjectUuidProvider.UI_ID_REQUIRED) {
+      return false;
+    }
+    if (ObjectUuidProvider.isUiId(id)) {
+      return false;
+    }
+    if (numbers.isNumber(parseInt(id))) {
+      // Model adapter ids
+      return false;
+    }
+    return true;
   }
 
   /**

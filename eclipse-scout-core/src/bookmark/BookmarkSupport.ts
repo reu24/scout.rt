@@ -186,7 +186,7 @@ export class BookmarkSupport implements ObjectWithType, BookmarkSupportModel {
 
     // Scout JS: resolve everything in the UI, i.e. the entire path is remaining
     let outline = this.desktop.getOutlines().find(outline => {
-      let outlineId = outline?.getObjectUuidBuilder().buildId();
+      let outlineId = outline?.buildUuid();
       return outlineId === bookmarkDefinition.outlineId;
     });
     let pagePath = bookmarkDefinition.bookmarkedPage

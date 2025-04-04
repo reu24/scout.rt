@@ -239,8 +239,8 @@ describe('Page', () => {
         parent: outline,
         classId: 'page-class-id' // page contains only own classId without any parents (see AbstractPage.classId)
       });
-      expect(page.uuidPath()).toBe('page-class-id|outline-class-id');
-      expect(outline.uuidPath()).toBe('outline-class-id');
+      expect(page.buildUuidPath()).toBe('page-class-id|outline-class-id');
+      expect(outline.buildUuidPath()).toBe('outline-class-id');
     });
 
     it('uuidPath for local page includes parent', () => {
@@ -249,19 +249,19 @@ describe('Page', () => {
         parent: outline,
         uuid: 'page-uuid' // page contains only own uuid without any parents
       });
-      expect(page.uuidPath()).toBe('page-uuid|outline-uuid');
-      expect(outline.uuidPath()).toBe('outline-uuid');
+      expect(page.buildUuidPath()).toBe('page-uuid|outline-uuid');
+      expect(outline.buildUuidPath()).toBe('outline-uuid');
     });
 
-    it('ObjectUuidBuilder.buildId returns id without parent for local and remote case', () => {
+    it('buildUuid returns id without parent for local and remote case', () => {
       outline.classId = 'outline-class-id';
       const remotePage = scout.create(Page, {
         parent: outline,
         classId: 'page-class-id'
       });
 
-      expect(remotePage.getObjectUuidBuilder().buildId()).toBe('page-class-id');
-      expect(outline.getObjectUuidBuilder().buildId()).toBe('outline-class-id');
+      expect(remotePage.buildUuid()).toBe('page-class-id');
+      expect(outline.buildUuid()).toBe('outline-class-id');
 
       outline.classId = null;
       outline.uuid = 'outline-uuid';
@@ -270,8 +270,8 @@ describe('Page', () => {
         uuid: 'page-uuid'
       });
 
-      expect(localPage.getObjectUuidBuilder().buildId()).toBe('page-uuid');
-      expect(outline.getObjectUuidBuilder().buildId()).toBe('outline-uuid');
+      expect(localPage.buildUuid()).toBe('page-uuid');
+      expect(outline.buildUuid()).toBe('outline-uuid');
     });
   });
 

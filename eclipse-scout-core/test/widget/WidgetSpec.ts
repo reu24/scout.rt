@@ -2272,8 +2272,8 @@ describe('Widget', () => {
     it('uuidPath for remote widget includes parent', () => {
       // remote widgets contain their parent classIds already (see AbstractWidget.classId, AbstractTable.classId, AbstractFormField.classId).
       const w4 = createRemoteWidgetTree();
-      expect(w4.parent.uuidPath()).toBe('w3-class-id_w2-class-id_w1-class-id_root-class-id');
-      expect(w4.uuidPath()).toBe('w4-class-id_w3-class-id_w2-class-id_w1-class-id_root-class-id');
+      expect(w4.parent.buildUuidPath()).toBe('w3-class-id_w2-class-id_w1-class-id_root-class-id');
+      expect(w4.buildUuidPath()).toBe('w4-class-id_w3-class-id_w2-class-id_w1-class-id_root-class-id');
     });
 
     function createRemoteWidgetTree(): Widget {
@@ -2287,8 +2287,8 @@ describe('Widget', () => {
     it('uuidPath for local widget includes parent', () => {
       // local widgets do not contain their parent classIds already.
       const w4 = createLocalWidgetTree();
-      expect(w4.parent.uuidPath()).toBe('w3-uuid|w2-uuid|w1-class-id_root-class-id');
-      expect(w4.uuidPath()).toBe('w4-uuid|w3-uuid|w2-uuid|w1-class-id_root-class-id');
+      expect(w4.parent.buildUuidPath()).toBe('w3-uuid|w2-uuid|w1-class-id_root-class-id');
+      expect(w4.buildUuidPath()).toBe('w4-uuid|w3-uuid|w2-uuid|w1-class-id_root-class-id');
     });
 
     function createLocalWidgetTree(): Widget {
@@ -2299,14 +2299,14 @@ describe('Widget', () => {
       return scout.create(Widget, {parent: w3, uuid: 'w4-uuid'});
     }
 
-    it('ObjectUuidBuilder.buildId returns id with parents for local and remote case', () => {
+    it('buildUuid returns id with parents for local and remote case', () => {
       const remote = createRemoteWidgetTree();
-      expect(remote.parent.getObjectUuidBuilder().buildId()).toBe('w3-class-id_w2-class-id_w1-class-id_root-class-id');
-      expect(remote.getObjectUuidBuilder().buildId()).toBe('w4-class-id_w3-class-id_w2-class-id_w1-class-id_root-class-id');
+      expect(remote.parent.buildUuid()).toBe('w3-class-id_w2-class-id_w1-class-id_root-class-id');
+      expect(remote.buildUuid()).toBe('w4-class-id_w3-class-id_w2-class-id_w1-class-id_root-class-id');
 
       const local = createLocalWidgetTree();
-      expect(local.parent.getObjectUuidBuilder().buildId()).toBe('w3-uuid|w2-uuid|w1-class-id_root-class-id');
-      expect(local.getObjectUuidBuilder().buildId()).toBe('w4-uuid|w3-uuid|w2-uuid|w1-class-id_root-class-id');
+      expect(local.parent.buildUuid()).toBe('w3-uuid|w2-uuid|w1-class-id_root-class-id');
+      expect(local.buildUuid()).toBe('w4-uuid|w3-uuid|w2-uuid|w1-class-id_root-class-id');
     });
   });
 });
