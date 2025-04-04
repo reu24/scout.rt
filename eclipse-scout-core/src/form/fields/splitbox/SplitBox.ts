@@ -781,4 +781,4 @@ export class SplitBox extends CompositeField {
 
 export type SplitBoxSplitterPositionType = EnumObject<typeof SplitBox.SplitterPositionType>;
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(SplitBox);
+ObjectUuidProvider.uuidPathSkipWidgets.add(SplitBox);

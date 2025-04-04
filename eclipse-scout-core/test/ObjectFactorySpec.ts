@@ -149,14 +149,14 @@ describe('ObjectFactory', () => {
       });
       expect(object instanceof ObjWithId).toBe(true);
       expect(object.id).toBeDefined();
-      expect(object.id).not.toBe(ObjectUuidProvider.UI_ID_REQUIRED);
+      expect(object.id).not.toBe(ObjectUuidProvider.UI_SEQ_ID_REQUIRED);
 
       let objectWithInit = ObjectFactory.get().create(ObjWithInitAndId, {
         parent: session.desktop
       });
       expect(objectWithInit instanceof ObjWithInitAndId).toBe(true);
       expect(objectWithInit.id).toBeDefined();
-      expect(objectWithInit.id).not.toBe(ObjectUuidProvider.UI_ID_REQUIRED);
+      expect(objectWithInit.id).not.toBe(ObjectUuidProvider.UI_SEQ_ID_REQUIRED);
     });
 
     it('does not override id passed by the model', () => {

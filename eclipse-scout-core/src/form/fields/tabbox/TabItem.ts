@@ -96,4 +96,4 @@ export class TabItem extends GroupBox implements TabItemModel {
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(TabItem);
+ObjectUuidProvider.uuidPathSkipWidgets.add(TabItem);

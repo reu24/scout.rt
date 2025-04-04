@@ -424,4 +424,4 @@ export class SequenceBox extends CompositeField implements SequenceBoxModel {
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(SequenceBox);
+ObjectUuidProvider.uuidPathSkipWidgets.add(SequenceBox);

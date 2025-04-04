@@ -32,7 +32,7 @@ export class OutlineSpecHelper {
 
   createModelNode(id: string, text: string, model?: PageModel): PageModel {
     return $.extend({
-      id: id || ObjectUuidProvider.createUiId(),
+      id: id || ObjectUuidProvider.get().createUiSeqId(),
       text: text
     }, model);
   }

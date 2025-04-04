@@ -7,7 +7,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EventHandler, GroupBoxMenuItemsOrder, HtmlComponent, InitModelOf, MenuBar, PropertyChangeEvent, scout, Tab, TabArea, TabBox, TabBoxHeaderLayout, TabItem, Widget, WidgetEventMap, WidgetModel} from '../../../index';
+import {
+  EventHandler, GroupBoxMenuItemsOrder, HtmlComponent, InitModelOf, MenuBar, ObjectUuidProvider, PropertyChangeEvent, scout, Tab, TabArea, TabBox, TabBoxHeaderLayout, TabItem, Widget, WidgetEventMap, WidgetModel
+} from '../../../index';
 
 export interface TabBoxHeaderModel extends WidgetModel {
   tabBox: TabBox;
@@ -122,3 +124,5 @@ export class TabBoxHeader extends Widget implements TabBoxHeaderModel {
     }
   }
 }
+
+ObjectUuidProvider.uuidPathSkipWidgets.add(TabBoxHeader);

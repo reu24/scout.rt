@@ -9,7 +9,7 @@
  */
 import {
   aria, CollapseHandle, CollapseHandleActionEvent, Desktop, DesktopNavigationEventMap, DesktopNavigationHandle, DesktopNavigationLayout, DesktopNavigationModel, DesktopToolBox, Event, EventHandler, HtmlComponent, InitModelOf, LayoutData,
-  Outline, PropertyChangeEvent, scout, SingleLayout, strings, styles, Tree, ViewButtonBox, Widget
+  ObjectUuidProvider, Outline, PropertyChangeEvent, scout, SingleLayout, strings, styles, Tree, ViewButtonBox, Widget
 } from '../../index';
 
 export class DesktopNavigation extends Widget implements DesktopNavigationModel {
@@ -341,3 +341,4 @@ export class DesktopNavigation extends Widget implements DesktopNavigationModel 
 }
 
 export type DesktopNavigationLayoutData = LayoutData & { fullWidth?: boolean };
+ObjectUuidProvider.uuidPathSkipWidgets.add(DesktopNavigation);
