@@ -377,8 +377,14 @@ export function ensureId(ensure = true) {
   return <T extends Constructor | AbstractConstructor>(BaseClass: T) => class extends BaseClass {
     constructor(...args: any[]) {
       super(...args);
-      if (ensure && objects.isNullOrUndefined(this['id'])) {
-        this['id'] = ObjectUuidProvider.UI_ID_REQUIRED;
+      if (ensure) {
+        if (objects.isNullOrUndefined(this['id'])) {
+          this['id'] = ObjectUuidProvider.UI_ID_REQUIRED;
+        }
+      } else {
+        if (this['id'] === ObjectUuidProvider.UI_ID_REQUIRED) {
+          this['id'] = null;
+        }
       }
     }
   };
