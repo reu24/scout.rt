@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2023 BSI Business Systems Integration AG
+ * Copyright (c) 2010, 2025 BSI Business Systems Integration AG
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -118,5 +118,19 @@ export const promises = {
         deferred.resolve.apply(deferred, [promiseCreator.results]);
       }
     }
+  },
+
+  /**
+   * Converts a {@link JQuery.Promise} into a native Promise.
+   */
+  async toNative<T>(promise: JQuery.Promise<T>): Promise<T> {
+    return promise;
+  },
+
+  /**
+   * Converts a native Promise into a {@link JQuery.Promise}.
+   */
+  toJQuery<T>(promise: Promise<T>): JQuery.Promise<T> {
+    return $.when(promise);
   }
 };
