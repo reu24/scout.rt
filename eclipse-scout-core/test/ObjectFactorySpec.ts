@@ -139,6 +139,10 @@ describe('ObjectFactory', () => {
       factory.registerNamespace('osSpecNs1', {ObjWithId, ObjWithInitAndId, ObjWithoutId});
     });
 
+    afterEach(() => {
+      factory.removeFromNamespace([ObjWithId, ObjWithInitAndId, ObjWithoutId]);
+    });
+
     it('is set to the resulting object if ensureId decorator is present', () => {
       let object = ObjectFactory.get().create(ObjWithId, {
         parent: session.desktop
