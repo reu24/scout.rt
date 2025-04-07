@@ -366,7 +366,7 @@ export class Column<TValue = string> extends PropertyEventEmitter implements Col
     // to reference, we do not need to reference the cell either, because screen readers will announce the cell
     // content naturally if there is no aria-labelledby
     if (this.table.header && strings.hasText(this.table.header.headerLabelId)) {
-      let cellLabelId = ObjectUuidProvider.createUiId();
+      let cellLabelId = ObjectUuidProvider.createUiSeqId();
       ariaAttributes += ' aria-labelledBy="' + this.table.header.headerLabelId + ' ' + cellLabelId + '" ' + 'id="' + cellLabelId + '"';
     }
     return '<div' + ariaAttributes + ' class="' + cssClass + '" style="' + style + '">' + content + '</div>';

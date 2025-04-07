@@ -393,7 +393,7 @@ describe('scout', () => {
             parent: new NullWidget(),
             session: session
           });
-        expect(menu.id).toBe(ObjectUuidProvider.UI_ID_PREFIX + expectedSeqNo.toString());
+        expect(menu.id).toBe(ObjectUuidProvider.UI_SEQ_ID_PREFIX + expectedSeqNo.toString());
         expect(SpecObjectUuidProvider.getUniqueIdSeqNo()).toBe(expectedSeqNo);
       });
 

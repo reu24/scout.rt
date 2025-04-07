@@ -26,15 +26,15 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   /**
    * Prefix for all UI generated IDs.
    */
-  static UI_ID_PREFIX = '_ui_'; // must not contain any dots ('.') so that the id can be used as css selector "#..." and for the RegExp 'UI_ID_PATTERN'.
+  static UI_SEQ_ID_PREFIX = '_ui_'; // must not contain any dots ('.') so that the id can be used as css selector "#..." and for the RegExp 'UI_SEQ_PATTERN'.
+  /**
+   * Marker for the id attribute to show the {@link ObjectFactory} an id is required.
+   */
+  static UI_SEQ_ID_REQUIRED = 'UI_SEQ_ID_REQUIRED';
   /**
    * Delimiter for the segments of a uuidPath.
    */
   static UUID_PATH_DELIMITER = '|'; // "-" is used by UUID, "." by ClassNames, "_" by ClassId path from Java (see ITypeWithClassId.ID_CONCAT_SYMBOL).
-  /**
-   * Marker for the id attribute to show the {@link ObjectFactory} an id is required.
-   */
-  static UI_ID_REQUIRED = 'UI_ID_REQUIRED';
   /**
    * Set of widgets which will be skipped when building the uuidPath. A widget is skipped if its class is exactly one of these (NOT instanceof!).
    *
@@ -46,9 +46,9 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    * This template use case is the reason why the subclasses of the registered widgets are not considered.
    */
   static UuidPathSkipWidgets: Set<Constructor<Widget>> = new Set<Constructor<Widget>>();
-  /** use {@link createUiId} to generate a new ID */
-  protected static _uniqueIdSeqNo = 0;
-  protected static UI_ID_PATTERN = new RegExp('^' + ObjectUuidProvider.UI_ID_PREFIX + '\\d+$');
+  /** use {@link createUiSeqId} to generate a new ID */
+  protected static _uiSeqIdNo = 0;
+  protected static UI_SEQ_ID_PATTERN = new RegExp('^' + ObjectUuidProvider.UI_SEQ_ID_PREFIX + '\\d+$');
 
   constructor() {
     this.objectType = null;
@@ -143,10 +143,10 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     if (strings.empty(id)) {
       return false;
     }
-    if (id === ObjectUuidProvider.UI_ID_REQUIRED) {
+    if (id === ObjectUuidProvider.UI_SEQ_ID_REQUIRED) {
       return false;
     }
-    if (ObjectUuidProvider.isUiId(id)) {
+    if (ObjectUuidProvider.isUiSeqId(id)) {
       return false;
     }
     if (numbers.isNumber(parseInt(id))) {
@@ -164,21 +164,20 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   }
 
   /**
-   * Checks if the given id is a UI ID created from the sequence.
+   * Checks if the given id is an id created from the ui sequence.
    * @param id The id to check or null.
-   * @returns true if the id follows the format of UI IDs (e.g. starts with {@link UI_ID_PREFIX}).
+   * @returns true if the id follows the format of UI SEQ IDs (e.g. starts with {@link UI_SEQ_ID_PREFIX}).
    */
-  static isUiId(id: string): boolean {
-    return ObjectUuidProvider.UI_ID_PATTERN.test(id);
+  static isUiSeqId(id: string): boolean {
+    return ObjectUuidProvider.UI_SEQ_ID_PATTERN.test(id);
   }
 
   /**
    * Returns a new unique UI ID.
-   * @returns id with prefix {@link ObjectUuidProvider.UI_ID_PREFIX}.
+   * @returns id with prefix {@link ObjectUuidProvider.UI_SEQ_ID_PREFIX}.
    */
-  static createUiId(): string {
-    // FIXME mvi [js-bookmark] Find better name than UI ID. Sounds too similar to UUID. Also adapt prefix?
-    return ObjectUuidProvider.UI_ID_PREFIX + (++this._uniqueIdSeqNo).toString();
+  static createUiSeqId(): string {
+    return ObjectUuidProvider.UI_SEQ_ID_PREFIX + (++this._uiSeqIdNo).toString();
   }
 
   /**

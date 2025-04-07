@@ -338,7 +338,7 @@ describe('OutlineAdapter', () => {
 
     it('is deserialized', () => {
       let model = {
-        id: ObjectUuidProvider.createUiId(),
+        id: ObjectUuidProvider.createUiSeqId(),
         session,
         objectType: 'Outline',
         nodes: [{

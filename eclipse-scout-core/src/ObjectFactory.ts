@@ -168,7 +168,7 @@ export class ObjectFactory {
     if (objects.isFunction(scoutObject.init)) {
       if (model) {
         if (model.id === undefined && this._ensureUniqueId(scoutObject, options)) {
-          model.id = ObjectUuidProvider.createUiId();
+          model.id = ObjectUuidProvider.createUiSeqId();
         }
         if (ensureObjectType) {
           model.objectType = this.getObjectType(objectType);
@@ -178,7 +178,7 @@ export class ObjectFactory {
     }
 
     if (this._ensureUniqueId(scoutObject, options)) {
-      scoutObject.id = ObjectUuidProvider.createUiId();
+      scoutObject.id = ObjectUuidProvider.createUiSeqId();
     }
     if (scoutObject.objectType === undefined && ensureObjectType) {
       scoutObject.objectType = this.getObjectType(objectType);
@@ -192,14 +192,14 @@ export class ObjectFactory {
   }
 
   protected _ensureUniqueId(scoutObject: any, options?: ObjectFactoryOptions): boolean {
-    return scout.nvl(options.ensureUniqueId, scoutObject.id === ObjectUuidProvider.UI_ID_REQUIRED);
+    return scout.nvl(options.ensureUniqueId, scoutObject.id === ObjectUuidProvider.UI_SEQ_ID_REQUIRED);
   }
 
   /**
-   * @deprecated Use {@link ObjectUuidProvider.createUiId} instead.
+   * @deprecated Use {@link ObjectUuidProvider.createUiSeqId} instead.
    */
   createUniqueId(): string {
-    return ObjectUuidProvider.createUiId();
+    return ObjectUuidProvider.createUiSeqId();
   }
 
   resolveTypedObjectType<T>(objectType: ObjectType<T>): ObjectType<T> {
@@ -367,7 +367,7 @@ let objectFactory = new ObjectFactory();
 /**
  * Class decorator function.
  *
- * It writes {@link ObjectUuidProvider.UI_ID_REQUIRED} to the id attribute to indicate the {@link ObjectFactory} needs to assign a unique id to the object unless it already has an id.
+ * It writes {@link ObjectUuidProvider.UI_SEQ_ID_REQUIRED} to the id attribute to indicate the {@link ObjectFactory} needs to assign a unique id to the object unless it already has an id.
  *
  * It is possible to disable the behavior by extending from the class having the ensureId decorator and adding the decorator with the parameter false to the subclass.
  *
@@ -379,10 +379,10 @@ export function ensureId(ensure = true) {
       super(...args);
       if (ensure) {
         if (objects.isNullOrUndefined(this['id'])) {
-          this['id'] = ObjectUuidProvider.UI_ID_REQUIRED;
+          this['id'] = ObjectUuidProvider.UI_SEQ_ID_REQUIRED;
         }
       } else {
-        if (this['id'] === ObjectUuidProvider.UI_ID_REQUIRED) {
+        if (this['id'] === ObjectUuidProvider.UI_SEQ_ID_REQUIRED) {
           this['id'] = null;
         }
       }

@@ -11,6 +11,6 @@ import {ObjectUuidProvider} from '../../index';
 
 export class SpecObjectUuidProvider extends ObjectUuidProvider {
   static getUniqueIdSeqNo(): number {
-    return ObjectUuidProvider._uniqueIdSeqNo;
+    return ObjectUuidProvider._uiSeqIdNo;
   }
 }

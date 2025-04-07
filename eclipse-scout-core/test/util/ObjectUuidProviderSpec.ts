@@ -16,27 +16,27 @@ describe('ObjectUuidProvider', () => {
   describe('createUiId', () => {
     it('has correct prefix and increases with each call', () => {
       const nextIdSeqNo = SpecObjectUuidProvider.getUniqueIdSeqNo() + 1;
-      expect(ObjectUuidProvider.createUiId()).toBe(ObjectUuidProvider.UI_ID_PREFIX + nextIdSeqNo);
+      expect(ObjectUuidProvider.createUiSeqId()).toBe(ObjectUuidProvider.UI_SEQ_ID_PREFIX + nextIdSeqNo);
       expect(SpecObjectUuidProvider.getUniqueIdSeqNo()).toBe(nextIdSeqNo);
     });
   });
 
   describe('isUiId', () => {
     it('correctly detects UI IDs', () => {
-      expect(ObjectUuidProvider.isUiId(ObjectUuidProvider.UI_ID_PREFIX + '1234')).toBeTrue();
-      expect(ObjectUuidProvider.isUiId('_ui_1')).toBeTrue();
-      expect(ObjectUuidProvider.isUiId('_ui_0')).toBeTrue();
-      expect(ObjectUuidProvider.isUiId('_ui_1234567890')).toBeTrue();
+      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234')).toBeTrue();
+      expect(ObjectUuidProvider.isUiSeqId('_ui_1')).toBeTrue();
+      expect(ObjectUuidProvider.isUiSeqId('_ui_0')).toBeTrue();
+      expect(ObjectUuidProvider.isUiSeqId('_ui_1234567890')).toBeTrue();
 
-      expect(ObjectUuidProvider.isUiId(ObjectUuidProvider.UI_ID_PREFIX)).toBeFalse();
-      expect(ObjectUuidProvider.isUiId('_ui.1234567890')).toBeFalse();
-      expect(ObjectUuidProvider.isUiId('ui1234567890')).toBeFalse(); // old style
-      expect(ObjectUuidProvider.isUiId('1234567890')).toBeFalse();
-      expect(ObjectUuidProvider.isUiId(ObjectUuidProvider.UI_ID_PREFIX + '1234a')).toBeFalse();
-      expect(ObjectUuidProvider.isUiId(ObjectUuidProvider.UI_ID_PREFIX + '1234_')).toBeFalse();
-      expect(ObjectUuidProvider.isUiId(ObjectUuidProvider.UI_ID_PREFIX + '.1234.')).toBeFalse();
-      expect(ObjectUuidProvider.isUiId(ObjectUuidProvider.UI_ID_PREFIX + 'a')).toBeFalse();
-      expect(ObjectUuidProvider.isUiId(ObjectUuidProvider.UI_ID_PREFIX + '12.34')).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX)).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId('_ui.1234567890')).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId('ui1234567890')).toBeFalse(); // old style
+      expect(ObjectUuidProvider.isUiSeqId('1234567890')).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234a')).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234_')).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '.1234.')).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + 'a')).toBeFalse();
+      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '12.34')).toBeFalse();
     });
   });
 
@@ -113,13 +113,13 @@ describe('ObjectUuidProvider', () => {
       });
 
       it('ignores ui sequence ids', () => {
-        assertUuid({id: ObjectUuidProvider.createUiId()}, null);
-        assertUuid({id: ObjectUuidProvider.createUiId(), objectType: 'Button'}, 'Button'); // considers object type if id is ignored
+        assertUuid({id: ObjectUuidProvider.createUiSeqId()}, null);
+        assertUuid({id: ObjectUuidProvider.createUiSeqId(), objectType: 'Button'}, 'Button'); // considers object type if id is ignored
       });
 
       it('ignores temporary id', () => {
-        assertUuid({id: ObjectUuidProvider.UI_ID_REQUIRED}, null);
-        assertUuid({id: ObjectUuidProvider.UI_ID_REQUIRED, objectType: 'Button'}, 'Button'); // considers object type if id is ignored
+        assertUuid({id: ObjectUuidProvider.UI_SEQ_ID_REQUIRED}, null);
+        assertUuid({id: ObjectUuidProvider.UI_SEQ_ID_REQUIRED, objectType: 'Button'}, 'Button'); // considers object type if id is ignored
       });
 
       it('ignores object type and id if fallback is disabled', () => {
@@ -186,7 +186,7 @@ describe('ObjectUuidProvider', () => {
     it('returns null if object has no uuid candidates', () => {
       const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
       const object = {
-        id: ObjectUuidProvider.createUiId(),
+        id: ObjectUuidProvider.createUiSeqId(),
         parent
       };
       assertUuidPath(object, null);

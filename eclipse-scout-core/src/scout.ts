@@ -538,7 +538,7 @@ export const scout = {
       }
     }
     if (scout.nvl(createUniqueId, true)) {
-      clone.id = ObjectUuidProvider.createUiId();
+      clone.id = ObjectUuidProvider.createUiSeqId();
     }
     if (clone.cloneOf === undefined) {
       clone.cloneOf = template;

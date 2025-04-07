@@ -28,10 +28,10 @@ export const widgets = {
   },
 
   /**
-   * @deprecated Use {@link ObjectUuidProvider.createUiId} instead.
+   * @deprecated Use {@link ObjectUuidProvider.createUiSeqId} instead.
    */
   createUniqueId(prefix?: string): string {
-    return ObjectUuidProvider.createUiId();
+    return ObjectUuidProvider.createUiSeqId();
   },
 
   /**

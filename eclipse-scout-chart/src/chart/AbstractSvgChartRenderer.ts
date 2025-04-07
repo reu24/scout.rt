@@ -29,8 +29,8 @@ export class AbstractSvgChartRenderer extends AbstractChartRenderer {
     super(chart);
     this.chartBox = null;
 
-    this.clipId = 'Clip-' + ObjectUuidProvider.createUiId();
-    this.maskId = 'Mask-' + ObjectUuidProvider.createUiId();
+    this.clipId = 'Clip-' + ObjectUuidProvider.createUiSeqId();
+    this.maskId = 'Mask-' + ObjectUuidProvider.createUiSeqId();
 
     this.suppressLegendBox = false;
   }
@@ -253,7 +253,7 @@ export class AbstractSvgChartRenderer extends AbstractChartRenderer {
     $mask[0].id = this.maskId;
 
     this.chart.$container.find('.' + cssClass).each(function(i) {
-      this.id = 'ClipMask-' + ObjectUuidProvider.createUiId();
+      this.id = 'ClipMask-' + ObjectUuidProvider.createUiSeqId();
       $clip.appendSVG('use').attrXLINK('href', '#' + this.id);
       $mask.appendSVG('use').attrXLINK('href', '#' + this.id);
     });
