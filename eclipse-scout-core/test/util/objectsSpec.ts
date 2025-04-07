@@ -373,6 +373,22 @@ describe('objects', () => {
     });
   });
 
+  describe('parseBoolean', () => {
+    it('returns true or false if the value is true or false ignoring case', () => {
+      expect(objects.parseBoolean('true')).toBe(true);
+      expect(objects.parseBoolean('TRUE')).toBe(true);
+      expect(objects.parseBoolean('tRuE')).toBe(true);
+      expect(objects.parseBoolean('false')).toBe(false);
+      expect(objects.parseBoolean('FALSE')).toBe(false);
+      expect(objects.parseBoolean('fAlSe')).toBe(false);
+
+      expect(objects.parseBoolean('')).toBe(undefined);
+      expect(objects.parseBoolean(' ')).toBe(undefined);
+      expect(objects.parseBoolean(undefined)).toBe(undefined);
+      expect(objects.parseBoolean(null)).toBe(null);
+    });
+  });
+
   describe('values', () => {
     it('returns object values', () => {
       let Class = function() {
