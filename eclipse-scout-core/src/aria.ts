@@ -147,7 +147,7 @@ export const aria = {
     let targetId = $targetElement.attr('id') as string;
     if (!targetId) {
       // Create an id if the element does not have one yet
-      targetId = ObjectUuidProvider.createUiSeqId();
+      targetId = ObjectUuidProvider.get().createUiSeqId();
       $targetElement.attr('id', targetId);
     }
     if (!replace) {

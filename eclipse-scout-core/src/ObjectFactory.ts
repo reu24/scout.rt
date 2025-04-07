@@ -168,7 +168,7 @@ export class ObjectFactory {
     if (objects.isFunction(scoutObject.init)) {
       if (model) {
         if (model.id === undefined && this._ensureUniqueId(scoutObject, options)) {
-          model.id = ObjectUuidProvider.createUiSeqId();
+          model.id = ObjectUuidProvider.get().createUiSeqId();
         }
         if (ensureObjectType) {
           model.objectType = this.getObjectType(objectType);
@@ -178,7 +178,7 @@ export class ObjectFactory {
     }
 
     if (this._ensureUniqueId(scoutObject, options)) {
-      scoutObject.id = ObjectUuidProvider.createUiSeqId();
+      scoutObject.id = ObjectUuidProvider.get().createUiSeqId();
     }
     if (scoutObject.objectType === undefined && ensureObjectType) {
       scoutObject.objectType = this.getObjectType(objectType);
@@ -199,7 +199,7 @@ export class ObjectFactory {
    * @deprecated Use {@link ObjectUuidProvider.createUiSeqId} instead.
    */
   createUniqueId(): string {
-    return ObjectUuidProvider.createUiSeqId();
+    return ObjectUuidProvider.get().createUiSeqId();
   }
 
   resolveTypedObjectType<T>(objectType: ObjectType<T>): ObjectType<T> {

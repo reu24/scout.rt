@@ -31,7 +31,7 @@ export const widgets = {
    * @deprecated Use {@link ObjectUuidProvider.createUiSeqId} instead.
    */
   createUniqueId(prefix?: string): string {
-    return ObjectUuidProvider.createUiSeqId();
+    return ObjectUuidProvider.get().createUiSeqId();
   },
 
   /**

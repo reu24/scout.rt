@@ -88,4 +88,4 @@ export class MenuBarBox extends Widget implements MenuBarBoxModel {
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(MenuBarBox);
+ObjectUuidProvider.uuidPathSkipWidgets.add(MenuBarBox);

@@ -350,4 +350,4 @@ export class BenchColumn extends Widget implements BenchColumnModel {
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(BenchColumn);
+ObjectUuidProvider.uuidPathSkipWidgets.add(BenchColumn);

@@ -27,4 +27,4 @@ export class DesktopToolBox extends MenuBox {
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(DesktopToolBox);
+ObjectUuidProvider.uuidPathSkipWidgets.add(DesktopToolBox);

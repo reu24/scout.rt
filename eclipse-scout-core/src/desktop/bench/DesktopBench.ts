@@ -838,4 +838,4 @@ export class DesktopBench extends Widget implements DesktopBenchModel {
 }
 
 export type OutlineContent = Form | Table | OutlineOverview;
-ObjectUuidProvider.UuidPathSkipWidgets.add(DesktopBench);
+ObjectUuidProvider.uuidPathSkipWidgets.add(DesktopBench);

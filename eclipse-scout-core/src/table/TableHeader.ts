@@ -135,7 +135,7 @@ export class TableHeader extends Widget implements TableHeaderModel {
     $header.cssMinWidth(columnWidth).cssMaxWidth(columnWidth);
 
     // add label id to header item text, so table cells can reference it for screen readers
-    this.headerLabelId = ObjectUuidProvider.createUiSeqId();
+    this.headerLabelId = ObjectUuidProvider.get().createUiSeqId();
     $header.appendSpan('table-header-item-text').attr('id', this.headerLabelId);
 
     if (this.enabled) { // enabledComputed not used on purpose

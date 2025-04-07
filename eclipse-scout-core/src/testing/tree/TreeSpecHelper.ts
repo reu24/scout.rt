@@ -33,7 +33,7 @@ export class TreeSpecHelper {
 
   createModelNode(id?: string, text?: string, model?: TreeNodeModel): TreeNodeModel {
     return $.extend({
-      id: id || ObjectUuidProvider.createUiSeqId(),
+      id: id || ObjectUuidProvider.get().createUiSeqId(),
       text: text
     }, model);
   }

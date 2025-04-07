@@ -9,34 +9,33 @@
  */
 
 import {Button, GroupBox, ObjectUuidProvider, ObjectUuidSource, scout, Widget, WidgetModel} from '../../src';
-import {SpecObjectUuidProvider} from '../../src/testing';
 
 describe('ObjectUuidProvider', () => {
 
   describe('createUiId', () => {
     it('has correct prefix and increases with each call', () => {
-      const nextIdSeqNo = SpecObjectUuidProvider.getUniqueIdSeqNo() + 1;
-      expect(ObjectUuidProvider.createUiSeqId()).toBe(ObjectUuidProvider.UI_SEQ_ID_PREFIX + nextIdSeqNo);
-      expect(SpecObjectUuidProvider.getUniqueIdSeqNo()).toBe(nextIdSeqNo);
+      const nextIdSeqNo = ObjectUuidProvider.get().uiSeqIdNo + 1;
+      expect(ObjectUuidProvider.get().createUiSeqId()).toBe(ObjectUuidProvider.UI_SEQ_ID_PREFIX + nextIdSeqNo);
+      expect(ObjectUuidProvider.get().uiSeqIdNo).toBe(nextIdSeqNo);
     });
   });
 
   describe('isUiId', () => {
     it('correctly detects UI IDs', () => {
-      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234')).toBeTrue();
-      expect(ObjectUuidProvider.isUiSeqId('_ui_1')).toBeTrue();
-      expect(ObjectUuidProvider.isUiSeqId('_ui_0')).toBeTrue();
-      expect(ObjectUuidProvider.isUiSeqId('_ui_1234567890')).toBeTrue();
+      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234')).toBeTrue();
+      expect(ObjectUuidProvider.get().isUiSeqId('_ui_1')).toBeTrue();
+      expect(ObjectUuidProvider.get().isUiSeqId('_ui_0')).toBeTrue();
+      expect(ObjectUuidProvider.get().isUiSeqId('_ui_1234567890')).toBeTrue();
 
-      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX)).toBeFalse();
-      expect(ObjectUuidProvider.isUiSeqId('_ui.1234567890')).toBeFalse();
-      expect(ObjectUuidProvider.isUiSeqId('ui1234567890')).toBeFalse(); // old style
-      expect(ObjectUuidProvider.isUiSeqId('1234567890')).toBeFalse();
-      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234a')).toBeFalse();
-      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234_')).toBeFalse();
-      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '.1234.')).toBeFalse();
-      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + 'a')).toBeFalse();
-      expect(ObjectUuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '12.34')).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX)).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId('_ui.1234567890')).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId('ui1234567890')).toBeFalse(); // old style
+      expect(ObjectUuidProvider.get().isUiSeqId('1234567890')).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234a')).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234_')).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '.1234.')).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + 'a')).toBeFalse();
+      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '12.34')).toBeFalse();
     });
   });
 
@@ -46,16 +45,16 @@ describe('ObjectUuidProvider', () => {
     }
 
     it('only matches exact classes and no instanceof', () => {
-      expect(ObjectUuidProvider.isUuidPathSkipWidget(null)).toBeTrue(); // skip null objects
-      expect(ObjectUuidProvider.isUuidPathSkipWidget(new GroupBox())).toBeTrue();
+      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(null)).toBeTrue(); // skip null objects
+      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(new GroupBox())).toBeTrue();
 
-      expect(ObjectUuidProvider.isUuidPathSkipWidget(new TestGroupBox())).toBeFalse();
-      ObjectUuidProvider.UuidPathSkipWidgets.add(TestGroupBox);
-      expect(ObjectUuidProvider.isUuidPathSkipWidget(new TestGroupBox())).toBeTrue();
+      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(new TestGroupBox())).toBeFalse();
+      ObjectUuidProvider.uuidPathSkipWidgets.add(TestGroupBox);
+      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(new TestGroupBox())).toBeTrue();
     });
 
     afterAll(() => {
-      ObjectUuidProvider.UuidPathSkipWidgets.delete(TestGroupBox);
+      ObjectUuidProvider.uuidPathSkipWidgets.delete(TestGroupBox);
     });
   });
 
@@ -113,8 +112,8 @@ describe('ObjectUuidProvider', () => {
       });
 
       it('ignores ui sequence ids', () => {
-        assertUuid({id: ObjectUuidProvider.createUiSeqId()}, null);
-        assertUuid({id: ObjectUuidProvider.createUiSeqId(), objectType: 'Button'}, 'Button'); // considers object type if id is ignored
+        assertUuid({id: ObjectUuidProvider.get().createUiSeqId()}, null);
+        assertUuid({id: ObjectUuidProvider.get().createUiSeqId(), objectType: 'Button'}, 'Button'); // considers object type if id is ignored
       });
 
       it('ignores temporary id', () => {
@@ -186,7 +185,7 @@ describe('ObjectUuidProvider', () => {
     it('returns null if object has no uuid candidates', () => {
       const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
       const object = {
-        id: ObjectUuidProvider.createUiSeqId(),
+        id: ObjectUuidProvider.get().createUiSeqId(),
         parent
       };
       assertUuidPath(object, null);

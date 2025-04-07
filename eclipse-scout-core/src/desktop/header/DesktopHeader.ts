@@ -384,4 +384,4 @@ export class DesktopHeader extends Widget implements DesktopHeaderModel {
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(DesktopHeader);
+ObjectUuidProvider.uuidPathSkipWidgets.add(DesktopHeader);

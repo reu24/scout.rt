@@ -284,4 +284,4 @@ export class SimpleTabBox<TView extends SimpleTabView = SimpleTabView> extends W
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(SimpleTabBox);
+ObjectUuidProvider.uuidPathSkipWidgets.add(SimpleTabBox);

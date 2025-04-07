@@ -22,21 +22,29 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   objectType: string;
   id: string;
 
-  static INSTANCE: ObjectUuidProvider = null;
+  protected _uiSeqIdNo = 0;
+
   /**
    * Prefix for all UI generated IDs.
    */
   static UI_SEQ_ID_PREFIX = '_ui_'; // must not contain any dots ('.') so that the id can be used as css selector "#..." and for the RegExp 'UI_SEQ_PATTERN'.
+
   /**
    * Marker for the id attribute to show the {@link ObjectFactory} an id is required.
    */
   static UI_SEQ_ID_REQUIRED = 'UI_SEQ_ID_REQUIRED';
+
   /**
    * Delimiter for the segments of a uuidPath.
    */
   static UUID_PATH_DELIMITER = '|'; // "-" is used by UUID, "." by ClassNames, "_" by ClassId path from Java (see ITypeWithClassId.ID_CONCAT_SYMBOL).
+
+  /** use {@link createUiSeqId} to generate a new ID */
+  protected static _UI_SEQ_ID_PATTERN = new RegExp('^' + ObjectUuidProvider.UI_SEQ_ID_PREFIX + '\\d+$');
+  protected static _INSTANCE: ObjectUuidProvider;
+
   /**
-   * Set of widgets which will be skipped when building the uuidPath. A widget is skipped if its class is exactly one of these (NOT instanceof!).
+   * Modifiable set of widgets which will be skipped when building the uuidPath. A widget is skipped if its class is exactly one of these (NOT instanceof!).
    *
    * A widget may be skipped if it is not relevant for computing the uuidPath, e.g. if it is only a layouting component.
    * For example: A group box is skipped because the id or uuid of a widget is normally unique inside a form so the group box would unnecessarily enlarge the uuidPath.
@@ -45,10 +53,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    * it must not be skipped anymore because this template can be used multiple times on the same form and must therefore be part of the uuidPath.
    * This template use case is the reason why the subclasses of the registered widgets are not considered.
    */
-  static UuidPathSkipWidgets: Set<Constructor<Widget>> = new Set<Constructor<Widget>>();
-  /** use {@link createUiSeqId} to generate a new ID */
-  protected static _uiSeqIdNo = 0;
-  protected static UI_SEQ_ID_PATTERN = new RegExp('^' + ObjectUuidProvider.UI_SEQ_ID_PREFIX + '\\d+$');
+  static uuidPathSkipWidgets: Set<Constructor<Widget>> = new Set<Constructor<Widget>>();
 
   constructor() {
     this.objectType = null;
@@ -90,7 +95,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   }
 
   protected _isPathRelevantParent(parent: Widget): boolean {
-    if (ObjectUuidProvider.isUuidPathSkipWidget(parent) || parent instanceof Desktop || parent instanceof NullWidget) {
+    if (this.isUuidPathSkipWidget(parent) || parent instanceof Desktop || parent instanceof NullWidget) {
       return false; // always uninteresting parents, event if they have a stable ID.
     }
     return true;
@@ -146,7 +151,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     if (id === ObjectUuidProvider.UI_SEQ_ID_REQUIRED) {
       return false;
     }
-    if (ObjectUuidProvider.isUiSeqId(id)) {
+    if (this.isUiSeqId(id)) {
       return false;
     }
     if (numbers.isNumber(parseInt(id))) {
@@ -159,8 +164,8 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   /**
    * @returns true if the given widget should be skipped when computing the {@link uuidPath}.
    */
-  static isUuidPathSkipWidget(obj: Widget): boolean {
-    return !obj || ObjectUuidProvider.UuidPathSkipWidgets.has(obj.constructor as new() => Widget);
+  isUuidPathSkipWidget(obj: Widget): boolean {
+    return !obj || ObjectUuidProvider.uuidPathSkipWidgets.has(obj.constructor as new() => Widget);
   }
 
   /**
@@ -168,26 +173,33 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    * @param id The id to check or null.
    * @returns true if the id follows the format of UI SEQ IDs (e.g. starts with {@link UI_SEQ_ID_PREFIX}).
    */
-  static isUiSeqId(id: string): boolean {
-    return ObjectUuidProvider.UI_SEQ_ID_PATTERN.test(id);
+  isUiSeqId(id: string): boolean {
+    return ObjectUuidProvider._UI_SEQ_ID_PATTERN.test(id);
   }
 
   /**
    * Returns a new unique UI ID.
    * @returns id with prefix {@link ObjectUuidProvider.UI_SEQ_ID_PREFIX}.
    */
-  static createUiSeqId(): string {
+  createUiSeqId(): string {
     return ObjectUuidProvider.UI_SEQ_ID_PREFIX + (++this._uiSeqIdNo).toString();
+  }
+
+  /**
+   * @returns current uiSeqId number
+   */
+  get uiSeqIdNo(): number {
+    return this._uiSeqIdNo;
   }
 
   /**
    * @returns The shared singleton {@link ObjectUuidProvider} instance.
    */
   static get(): ObjectUuidProvider {
-    if (!ObjectUuidProvider.INSTANCE) {
-      ObjectUuidProvider.INSTANCE = scout.create(ObjectUuidProvider);
+    if (!ObjectUuidProvider._INSTANCE) {
+      ObjectUuidProvider._INSTANCE = scout.create(ObjectUuidProvider);
     }
-    return ObjectUuidProvider.INSTANCE;
+    return ObjectUuidProvider._INSTANCE;
   }
 }
 

@@ -42,4 +42,4 @@ export class Composite extends Widget implements CompositeModel {
   }
 }
 
-ObjectUuidProvider.UuidPathSkipWidgets.add(Composite);
+ObjectUuidProvider.uuidPathSkipWidgets.add(Composite);
