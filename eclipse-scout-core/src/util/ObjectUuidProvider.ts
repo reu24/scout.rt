@@ -175,6 +175,30 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   }
 
   /**
+   * Builds the uuid of the object and prepends the given prefix.
+   *
+   * This is useful for objects not having an own uuid but need to be referenced nevertheless.
+   */
+  createDependentUuid(prefix: string, source: ObjectUuidSource): string {
+    const uuid = this.uuid(source);
+    if (!uuid) {
+      return null;
+    }
+    return strings.join('-', prefix, uuid);
+  }
+
+  setDependentUuid(prefix: string, source: ObjectUuidSource, target: ObjectWithUuid & ObjectUuidSource): string {
+    if (target.uuid || target.classId) {
+      return;
+    }
+    const uuid = this.createDependentUuid(prefix, source);
+    if (!uuid) {
+      return;
+    }
+    return target.setUuid(uuid);
+  }
+
+  /**
    * Checks if the given id is an id created from the ui sequence.
    * @param id The id to check or null.
    * @returns true if the id follows the format of UI SEQ IDs (e.g. starts with {@link UI_SEQ_ID_PREFIX}).

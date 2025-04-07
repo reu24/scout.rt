@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {GroupBox, scout, SimpleTabBox} from '../../src/index';
+import {GroupBox, scout, SimpleTab, SimpleTabArea, SimpleTabBox} from '../../src/index';
 
 describe('SimpleTabArea', () => {
   let session: SandboxSession;
@@ -72,5 +72,56 @@ describe('SimpleTabArea', () => {
     expect(tabBox.$tabArea.children().eq(1).text().trim()).toBe('Two');
     expect(tabBox.$tabArea.children().eq(2)).not.toHaveClass('selected');
     expect(tabBox.$tabArea.children().eq(2).text().trim()).toBe('Three');
+  });
+
+  describe('uuid', () => {
+    it('is set to the tab', () => {
+      let tabArea = scout.create(SimpleTabArea, {
+        parent: session.desktop,
+        tabs: [{
+          objectType: SimpleTab,
+          uuid: '1'
+        }, {
+          objectType: SimpleTab,
+          classId: '2'
+        }]
+      });
+      tabArea.render();
+      expect(tabArea.tabs[0].buildUuid()).toBe('1');
+      expect(tabArea.tabs[1].buildUuid()).toBe('2');
+    });
+
+    it('is taken from view and prefixed', () => {
+      let view1 = scout.create(GroupBox, {
+        parent: session.desktop,
+        uuid: 'one'
+      });
+      let view2 = scout.create(GroupBox, {
+        parent: session.desktop,
+        classId: 'two'
+      });
+      let view3 = scout.create(GroupBox, {
+        parent: session.desktop,
+        classId: 'three'
+      });
+      let tabArea = scout.create(SimpleTabArea, {
+        parent: session.desktop,
+        tabs: [{
+          objectType: SimpleTab,
+          view: view1
+        }, {
+          objectType: SimpleTab,
+          view: view2
+        }, {
+          objectType: SimpleTab,
+          view: view2,
+          uuid: '3'
+        }]
+      });
+      tabArea.render();
+      expect(tabArea.tabs[0].buildUuid()).toBe('tab-one');
+      expect(tabArea.tabs[1].buildUuid()).toBe('tab-two');
+      expect(tabArea.tabs[2].buildUuid()).toBe('3'); // Does not override explicit id
+    });
   });
 });

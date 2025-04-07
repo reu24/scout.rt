@@ -161,6 +161,10 @@ export class Page extends TreeNode implements PageModel, ObjectWithUuid {
     });
   }
 
+  setUuid(uuid: string) {
+    this.uuid = uuid;
+  }
+
   getBookmarkAdapter(): BookmarkAdapter {
     if (!this._bookmarkAdapter) {
       this._bookmarkAdapter = scout.create(BookmarkAdapter);

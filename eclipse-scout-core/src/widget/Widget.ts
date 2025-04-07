@@ -159,7 +159,7 @@ export class Widget extends PropertyEventEmitter implements WidgetModel, ObjectW
     this._storedFocusedWidget = null;
 
     this._glassPaneContributions = [];
-    this._addCloneProperties(['visible', 'enabled', 'inheritAccessibility', 'cssClass']);
+    this._addCloneProperties(['visible', 'enabled', 'inheritAccessibility', 'cssClass', 'uuid', 'classId']);
     this._addMultiDimensionalProperty('enabled', true);
     this._addMultiDimensionalProperty('visible', true);
     this._addPropertyDimensionAlias('enabled', 'enabledGranted', {dimension: 'granted'});
@@ -212,6 +212,10 @@ export class Widget extends PropertyEventEmitter implements WidgetModel, ObjectW
 
   buildUuidPath(useFallback?: boolean): string {
     return ObjectUuidProvider.get().uuidPath(this, {useFallback});
+  }
+
+  setUuid(uuid: string) {
+    this.setProperty('uuid', uuid);
   }
 
   /**

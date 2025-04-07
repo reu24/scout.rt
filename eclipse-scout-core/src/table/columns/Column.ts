@@ -198,6 +198,10 @@ export class Column<TValue = string> extends PropertyEventEmitter implements Col
     });
   }
 
+  setUuid(uuid: string) {
+    this.setProperty('uuid', uuid);
+  }
+
   /** @internal */
   _setTable(table: Table) {
     if (this.table) {

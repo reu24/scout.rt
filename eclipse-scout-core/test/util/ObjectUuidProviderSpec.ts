@@ -11,31 +11,39 @@
 import {arrays, Button, GroupBox, ObjectUuidProvider, ObjectUuidSource, Outline, scout, Widget, WidgetModel} from '../../src';
 
 describe('ObjectUuidProvider', () => {
+  let session: SandboxSession;
+  let uuidProvider: ObjectUuidProvider;
+
+  beforeEach(() => {
+    setFixtures(sandbox());
+    session = sandboxSession();
+    uuidProvider = new ObjectUuidProvider();
+  });
 
   describe('createUiId', () => {
     it('has correct prefix and increases with each call', () => {
-      const nextIdSeqNo = ObjectUuidProvider.get().uiSeqIdNo + 1;
-      expect(ObjectUuidProvider.get().createUiSeqId()).toBe(ObjectUuidProvider.UI_SEQ_ID_PREFIX + nextIdSeqNo);
-      expect(ObjectUuidProvider.get().uiSeqIdNo).toBe(nextIdSeqNo);
+      const nextIdSeqNo = uuidProvider.uiSeqIdNo + 1;
+      expect(uuidProvider.createUiSeqId()).toBe(ObjectUuidProvider.UI_SEQ_ID_PREFIX + nextIdSeqNo);
+      expect(uuidProvider.uiSeqIdNo).toBe(nextIdSeqNo);
     });
   });
 
   describe('isUiId', () => {
     it('correctly detects UI IDs', () => {
-      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234')).toBeTrue();
-      expect(ObjectUuidProvider.get().isUiSeqId('_ui_1')).toBeTrue();
-      expect(ObjectUuidProvider.get().isUiSeqId('_ui_0')).toBeTrue();
-      expect(ObjectUuidProvider.get().isUiSeqId('_ui_1234567890')).toBeTrue();
+      expect(uuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234')).toBeTrue();
+      expect(uuidProvider.isUiSeqId('_ui_1')).toBeTrue();
+      expect(uuidProvider.isUiSeqId('_ui_0')).toBeTrue();
+      expect(uuidProvider.isUiSeqId('_ui_1234567890')).toBeTrue();
 
-      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX)).toBeFalse();
-      expect(ObjectUuidProvider.get().isUiSeqId('_ui.1234567890')).toBeFalse();
-      expect(ObjectUuidProvider.get().isUiSeqId('ui1234567890')).toBeFalse(); // old style
-      expect(ObjectUuidProvider.get().isUiSeqId('1234567890')).toBeFalse();
-      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234a')).toBeFalse();
-      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234_')).toBeFalse();
-      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '.1234.')).toBeFalse();
-      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + 'a')).toBeFalse();
-      expect(ObjectUuidProvider.get().isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '12.34')).toBeFalse();
+      expect(uuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX)).toBeFalse();
+      expect(uuidProvider.isUiSeqId('_ui.1234567890')).toBeFalse();
+      expect(uuidProvider.isUiSeqId('ui1234567890')).toBeFalse(); // old style
+      expect(uuidProvider.isUiSeqId('1234567890')).toBeFalse();
+      expect(uuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234a')).toBeFalse();
+      expect(uuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '1234_')).toBeFalse();
+      expect(uuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '.1234.')).toBeFalse();
+      expect(uuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + 'a')).toBeFalse();
+      expect(uuidProvider.isUiSeqId(ObjectUuidProvider.UI_SEQ_ID_PREFIX + '12.34')).toBeFalse();
     });
   });
 
@@ -46,12 +54,12 @@ describe('ObjectUuidProvider', () => {
 
     describe('uuidPathSkipWidgets', () => {
       it('can contain classes that must match exactly and no instanceof', () => {
-        expect(ObjectUuidProvider.get().skipParent(null)).toBeTrue(); // skip null objects
-        expect(ObjectUuidProvider.get().skipParent(new GroupBox())).toBeTrue();
+        expect(uuidProvider.skipParent(null)).toBeTrue(); // skip null objects
+        expect(uuidProvider.skipParent(new GroupBox())).toBeTrue();
 
-        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeFalse();
+        expect(uuidProvider.skipParent(new TestGroupBox())).toBeFalse();
         ObjectUuidProvider.uuidPathSkipWidgets.add(TestGroupBox);
-        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeTrue();
+        expect(uuidProvider.skipParent(new TestGroupBox())).toBeTrue();
       });
 
       afterEach(() => {
@@ -63,11 +71,11 @@ describe('ObjectUuidProvider', () => {
       let rule;
 
       it('can contain custom exclusions', () => {
-        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeFalse();
+        expect(uuidProvider.skipParent(new TestGroupBox())).toBeFalse();
 
         rule = w => w instanceof TestGroupBox;
         ObjectUuidProvider.uuidPathSkipRules.push(rule);
-        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeTrue();
+        expect(uuidProvider.skipParent(new TestGroupBox())).toBeTrue();
       });
 
       afterEach(() => {
@@ -130,8 +138,8 @@ describe('ObjectUuidProvider', () => {
       });
 
       it('ignores ui sequence ids', () => {
-        assertUuid({id: ObjectUuidProvider.get().createUiSeqId()}, null);
-        assertUuid({id: ObjectUuidProvider.get().createUiSeqId(), objectType: 'Button'}, 'Button'); // considers object type if id is ignored
+        assertUuid({id: uuidProvider.createUiSeqId()}, null);
+        assertUuid({id: uuidProvider.createUiSeqId(), objectType: 'Button'}, 'Button'); // considers object type if id is ignored
       });
 
       it('ignores temporary id', () => {
@@ -160,18 +168,11 @@ describe('ObjectUuidProvider', () => {
     });
 
     function assertUuid(object: ObjectUuidSource, expectedUuid: string, useFallback?: boolean) {
-      expect(ObjectUuidProvider.get().uuid(object, useFallback)).toBe(expectedUuid);
+      expect(uuidProvider.uuid(object, useFallback)).toBe(expectedUuid);
     }
   });
 
   describe('uuidPath', () => {
-
-    let session: SandboxSession;
-    beforeEach(() => {
-      setFixtures(sandbox());
-      session = sandboxSession();
-    });
-
     it('uses uuid if no parent present', () => {
       assertUuidPath({uuid: '1'}, '1');
       assertUuidPath({id: 'myId'}, 'myId');
@@ -218,7 +219,7 @@ describe('ObjectUuidProvider', () => {
     it('returns null if object has no uuid candidates', () => {
       const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
       const object = {
-        id: ObjectUuidProvider.get().createUiSeqId(),
+        id: uuidProvider.createUiSeqId(),
         parent
       };
       assertUuidPath(object, null);
@@ -276,7 +277,39 @@ describe('ObjectUuidProvider', () => {
     });
 
     function assertUuidPath(object: ObjectUuidSource, expectedUuidPath: string, useFallback?: boolean, appendParent?: boolean) {
-      expect(ObjectUuidProvider.get().uuidPath(object, {useFallback, appendParent})).toBe(expectedUuidPath);
+      expect(uuidProvider.uuidPath(object, {useFallback, appendParent})).toBe(expectedUuidPath);
     }
+  });
+
+  describe('createDependentUuid', () => {
+    it('calls buildUuid and prepends a prefix', () => {
+      expect(uuidProvider.createDependentUuid('abc', {uuid: '123'})).toBe('abc-123');
+      expect(uuidProvider.createDependentUuid('abc', {classId: 'cde'})).toBe('abc-cde');
+      expect(uuidProvider.createDependentUuid('abc', {})).toBe(null);
+    });
+  });
+
+  describe('setDependentUuid', () => {
+    it('uses createDependentUuid to set a uuid if the object does not have one yet', () => {
+      let button = scout.create(Button, {parent: session.desktop});
+      uuidProvider.setDependentUuid('abc', {uuid: '123'}, button);
+      expect(button.uuid).toBe('abc-123');
+
+      button.setUuid('qqq');
+      expect(button.uuid).toBe('qqq');
+
+      uuidProvider.setDependentUuid('abc', {uuid: '123'}, button);
+      expect(button.uuid).toBe('qqq'); // Not changed because button already had an uuid
+
+      let button2 = scout.create(Button, {parent: session.desktop, classId: 'zzz'});
+      uuidProvider.setDependentUuid('abc', {uuid: '123'}, button2);
+      expect(button2.uuid).toBe(null); // Not changed because button already had a classId
+      expect(button2.classId).toBe('zzz');
+
+      let button3 = scout.create(Button, {parent: session.desktop});
+      uuidProvider.setDependentUuid('abc', {classId: '123'}, button3);
+      expect(button3.uuid).toBe('abc-123'); // Considers classId
+      expect(button3.classId).toBe(null); // Does not set classId because it is not needed
+    });
   });
 });

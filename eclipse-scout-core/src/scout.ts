@@ -93,6 +93,11 @@ export interface ObjectWithUuid {
    * @see ObjectUuidProvider.uuidPath.
    */
   buildUuidPath(useFallback?: boolean): string;
+
+  /**
+   * Sets the {@link uuid} property.
+   */
+  setUuid(uuid: string);
 }
 
 export interface ObjectWithId<TId = string> {
