@@ -165,7 +165,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    * @returns true if the given widget should be skipped when computing the {@link uuidPath}.
    */
   isUuidPathSkipWidget(obj: Widget): boolean {
-    return !obj || ObjectUuidProvider.uuidPathSkipWidgets.has(obj.constructor as new() => Widget);
+    return !obj || ObjectUuidProvider.uuidPathSkipWidgets.has(obj.constructor as Constructor<Widget>);
   }
 
   /**
