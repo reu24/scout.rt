@@ -10,7 +10,8 @@
 import {
   aria, arrays, BenchColumn, BenchColumnLayoutData, BenchColumnViewActivateEvent, BenchColumnViewAddEvent, BenchColumnViewDeactivateEvent, BenchColumnViewRemoveEvent, BenchRowLayoutData, CollapseHandleActionEvent, Desktop,
   DesktopBenchEventMap, DesktopBenchModel, DesktopNavigationHandle, DesktopTab, DesktopTabArea, DesktopTabSelectKeyStroke, DisplayViewId, Event, EventHandler, FlexboxLayout, FlexboxLayoutData, Form, HeaderTabBoxController, HtmlComponent,
-  InitModelOf, KeyStrokeContext, Outline, OutlineOverview, OutlinePageChangedEvent, Page, PropertyChangeEvent, scout, SimpleTab, SimpleTabBox, Splitter, SplitterMoveEvent, styles, Table, TreeNodesSelectedEvent, Widget, widgets
+  InitModelOf, KeyStrokeContext, ObjectUuidProvider, Outline, OutlineOverview, OutlinePageChangedEvent, Page, PropertyChangeEvent, scout, SimpleTab, SimpleTabBox, Splitter, SplitterMoveEvent, styles, Table, TreeNodesSelectedEvent, Widget,
+  widgets
 } from '../../index';
 import $ from 'jquery';
 
@@ -837,3 +838,4 @@ export class DesktopBench extends Widget implements DesktopBenchModel {
 }
 
 export type OutlineContent = Form | Table | OutlineOverview;
+ObjectUuidProvider.UuidPathSkipWidgets.add(DesktopBench);

@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  arrays, BenchColumnEventMap, BenchColumnModel, BenchRowLayoutData, DesktopTabBoxController, DisplayViewId, EventHandler, FlexboxLayout, FlexboxLayoutData, HtmlComponent, InitModelOf, OutlineContent, scout, SimpleTabBox,
-  SimpleTabBoxViewActivateEvent, SimpleTabBoxViewAddEvent, SimpleTabBoxViewDeactivateEvent, SimpleTabBoxViewRemoveEvent, Splitter, SplitterMoveEvent, strings, Widget, widgets
+  arrays, BenchColumnEventMap, BenchColumnModel, BenchRowLayoutData, DesktopTabBoxController, DisplayViewId, EventHandler, FlexboxLayout, FlexboxLayoutData, HtmlComponent, InitModelOf, ObjectUuidProvider, OutlineContent, scout,
+  SimpleTabBox, SimpleTabBoxViewActivateEvent, SimpleTabBoxViewAddEvent, SimpleTabBoxViewDeactivateEvent, SimpleTabBoxViewRemoveEvent, Splitter, SplitterMoveEvent, strings, Widget, widgets
 } from '../../index';
 
 export class BenchColumn extends Widget implements BenchColumnModel {
@@ -349,3 +349,5 @@ export class BenchColumn extends Widget implements BenchColumnModel {
     widgets.updateFirstLastMarker(this.visibleTabBoxes());
   }
 }
+
+ObjectUuidProvider.UuidPathSkipWidgets.add(BenchColumn);

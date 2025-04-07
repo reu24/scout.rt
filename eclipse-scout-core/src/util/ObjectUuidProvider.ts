@@ -67,9 +67,6 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    */
   uuidPath(object: ObjectUuidSource, options?: UuidPathOptions) {
     const uuid = this.uuid(object, options?.useFallback);
-    if (!uuid) {
-      return null;
-    }
     let parent = options?.parent || object.parent;
     if (!parent) {
       return uuid;

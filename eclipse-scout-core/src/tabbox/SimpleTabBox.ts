@@ -8,7 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  arrays, Event, EventHandler, HtmlComponent, InitModelOf, LayoutData, scout, SimpleTabArea, SimpleTabBoxController, SimpleTabBoxEventMap, SimpleTabBoxLayout, SimpleTabBoxModel, SimpleTabView, SimpleTabViewContentLayout, Widget
+  arrays, Event, EventHandler, HtmlComponent, InitModelOf, LayoutData, ObjectUuidProvider, scout, SimpleTabArea, SimpleTabBoxController, SimpleTabBoxEventMap, SimpleTabBoxLayout, SimpleTabBoxModel, SimpleTabView, SimpleTabViewContentLayout,
+  Widget
 } from '../index';
 
 export class SimpleTabBox<TView extends SimpleTabView = SimpleTabView> extends Widget implements SimpleTabBoxModel<TView> {
@@ -282,3 +283,5 @@ export class SimpleTabBox<TView extends SimpleTabView = SimpleTabView> extends W
     });
   }
 }
+
+ObjectUuidProvider.UuidPathSkipWidgets.add(SimpleTabBox);

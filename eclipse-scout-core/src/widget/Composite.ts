@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {CompositeEventMap, CompositeModel, HtmlComponent, ObjectOrChildModel, Widget} from '../index';
+import {CompositeEventMap, CompositeModel, HtmlComponent, ObjectOrChildModel, ObjectUuidProvider, Widget} from '../index';
 
 export class Composite extends Widget implements CompositeModel {
   declare model: CompositeModel;
@@ -41,3 +41,5 @@ export class Composite extends Widget implements CompositeModel {
     this.invalidateLayoutTree();
   }
 }
+
+ObjectUuidProvider.UuidPathSkipWidgets.add(Composite);

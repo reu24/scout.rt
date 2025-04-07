@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Menu, MenuBox, Popup, strings} from '../../index';
+import {Menu, MenuBox, ObjectUuidProvider, Popup, strings} from '../../index';
 
 export class DesktopToolBox extends MenuBox {
 
@@ -26,3 +26,5 @@ export class DesktopToolBox extends MenuBox {
     this.$container.addClass('desktop-tool-box');
   }
 }
+
+ObjectUuidProvider.UuidPathSkipWidgets.add(DesktopToolBox);

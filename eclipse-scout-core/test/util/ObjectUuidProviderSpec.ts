@@ -183,16 +183,6 @@ describe('ObjectUuidProvider', () => {
       assertUuidPath(object2, '4|id2');
     });
 
-    it('ignores UI IDs', () => {
-      const root = scout.create(Widget, {parent: session.desktop, id: 'id2'});
-      const group = scout.create(Widget, {parent: root, id: ObjectUuidProvider.createUiId() /* is skipped */});
-      const object = {
-        uuid: '4',
-        parent: group
-      };
-      assertUuidPath(object, '4|id2');
-    });
-
     it('returns null if object has no uuid candidates', () => {
       const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
       const object = {
