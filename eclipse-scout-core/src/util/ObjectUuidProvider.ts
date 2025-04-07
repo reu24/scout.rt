@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Constructor, Desktop, NullWidget, numbers, ObjectFactory, ObjectModel, ObjectWithType, ObjectWithUuid, scout, SomeRequired, strings, Widget} from '../index';
+import {Constructor, numbers, ObjectFactory, ObjectModel, ObjectWithType, ObjectWithUuid, scout, SomeRequired, strings, Widget} from '../index';
 
 /**
  * Helper class to extract IDs of objects and to compute uuidPaths.
@@ -44,7 +44,8 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   protected static _INSTANCE: ObjectUuidProvider;
 
   /**
-   * Modifiable set of widgets which will be skipped when building the uuidPath. A widget is skipped if its class is exactly one of these (NOT instanceof!).
+   * Modifiable set of widgets which will be skipped when building the uuidPath.
+   * A widget is skipped if its class is exactly one of these (NOT instanceof!).
    *
    * A widget may be skipped if it is not relevant for computing the uuidPath, e.g. if it is only a layouting component.
    * For example: A group box is skipped because the id or uuid of a widget is normally unique inside a form so the group box would unnecessarily enlarge the uuidPath.
@@ -54,6 +55,11 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    * This template use case is the reason why the subclasses of the registered widgets are not considered.
    */
   static uuidPathSkipWidgets: Set<Constructor<Widget>> = new Set<Constructor<Widget>>();
+
+  /**
+   * Modifiable list of rules which are used to determine if a parent should be skipped when building the uuidPath.
+   */
+  static uuidPathSkipRules: ((widget: Widget) => boolean)[] = [];
 
   constructor() {
     this.objectType = null;
@@ -76,8 +82,8 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     if (!parent) {
       return uuid;
     }
-    const skipParent = !scout.nvl(options?.appendParent, !object.classId); // by default stop on classIds as they typically include its parents already
-    if (skipParent) {
+    const appendParent = scout.nvl(options?.appendParent, !object.classId); // by default stop on classIds as they typically include its parents already
+    if (!appendParent) {
       return uuid;
     }
     parent = this._findUuidPathParent(parent);
@@ -88,17 +94,10 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     if (!parent) {
       return null;
     }
-    if (this._isPathRelevantParent(parent)) {
+    if (!this.skipParent(parent)) {
       return parent;
     }
-    return parent.findParent(p => this._isPathRelevantParent(p));
-  }
-
-  protected _isPathRelevantParent(parent: Widget): boolean {
-    if (this.isUuidPathSkipWidget(parent) || parent instanceof Desktop || parent instanceof NullWidget) {
-      return false; // always uninteresting parents, event if they have a stable ID.
-    }
-    return true;
+    return parent.findParent(p => !this.skipParent(p));
   }
 
   /**
@@ -164,8 +163,15 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   /**
    * @returns true if the given widget should be skipped when computing the {@link uuidPath}.
    */
-  isUuidPathSkipWidget(obj: Widget): boolean {
-    return !obj || ObjectUuidProvider.uuidPathSkipWidgets.has(obj.constructor as Constructor<Widget>);
+  skipParent(obj: Widget): boolean {
+    if (!obj) {
+      return true;
+    }
+    let skip = ObjectUuidProvider.uuidPathSkipWidgets.has(obj.constructor as Constructor<Widget>);
+    if (skip) {
+      return true;
+    }
+    return ObjectUuidProvider.uuidPathSkipRules.some(rule => rule(obj));
   }
 
   /**

@@ -157,7 +157,6 @@ export class Page extends TreeNode implements PageModel, ObjectWithUuid {
 
   buildUuidPath(useFallback?: boolean): string {
     return ObjectUuidProvider.get().uuidPath(this, {
-      appendParent: true, // append the uuid of the parent outline even when having a classId as the classId does not include its parent yet (see AbstractPage.classId)
       useFallback
     });
   }

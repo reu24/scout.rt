@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Button, GroupBox, ObjectUuidProvider, ObjectUuidSource, scout, Widget, WidgetModel} from '../../src';
+import {arrays, Button, GroupBox, ObjectUuidProvider, ObjectUuidSource, Outline, scout, Widget, WidgetModel} from '../../src';
 
 describe('ObjectUuidProvider', () => {
 
@@ -39,22 +39,40 @@ describe('ObjectUuidProvider', () => {
     });
   });
 
-  describe('isUuidPathSkipWidget', () => {
+  describe('skipParent', () => {
 
     class TestGroupBox extends GroupBox {
     }
 
-    it('only matches exact classes and no instanceof', () => {
-      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(null)).toBeTrue(); // skip null objects
-      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(new GroupBox())).toBeTrue();
+    describe('uuidPathSkipWidgets', () => {
+      it('can contain classes that must match exactly and no instanceof', () => {
+        expect(ObjectUuidProvider.get().skipParent(null)).toBeTrue(); // skip null objects
+        expect(ObjectUuidProvider.get().skipParent(new GroupBox())).toBeTrue();
 
-      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(new TestGroupBox())).toBeFalse();
-      ObjectUuidProvider.uuidPathSkipWidgets.add(TestGroupBox);
-      expect(ObjectUuidProvider.get().isUuidPathSkipWidget(new TestGroupBox())).toBeTrue();
+        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeFalse();
+        ObjectUuidProvider.uuidPathSkipWidgets.add(TestGroupBox);
+        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeTrue();
+      });
+
+      afterEach(() => {
+        ObjectUuidProvider.uuidPathSkipWidgets.delete(TestGroupBox);
+      });
     });
 
-    afterAll(() => {
-      ObjectUuidProvider.uuidPathSkipWidgets.delete(TestGroupBox);
+    describe('uuidPathSkipRules', () => {
+      let rule;
+
+      it('can contain custom exclusions', () => {
+        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeFalse();
+
+        rule = w => w instanceof TestGroupBox;
+        ObjectUuidProvider.uuidPathSkipRules.push(rule);
+        expect(ObjectUuidProvider.get().skipParent(new TestGroupBox())).toBeTrue();
+      });
+
+      afterEach(() => {
+        arrays.remove(ObjectUuidProvider.uuidPathSkipRules, rule);
+      });
     });
   });
 
@@ -164,22 +182,37 @@ describe('ObjectUuidProvider', () => {
       assertUuidPath({}, null);
     });
 
-    it('uses parent if not in skip list', () => {
-      session.desktop.id = '1'; // ensure desktop has an id. Should be ignored for uuidPath.
+    it('includes uuid of parents', () => {
       const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
       const object = {
         uuid: '4',
         parent
       };
       assertUuidPath(object, '4|id3');
+    });
 
+    it('ignores parents if they are in skip list', () => {
       const root = scout.create(Widget, {parent: session.desktop, id: 'id2'});
-      const group = scout.create(GroupBox, {parent: root, uuid: '3' /* must be ignored */});
-      const object2 = {
+      const group = scout.create(GroupBox, {parent: root, uuid: '3'}); // GroupBoxes are ignored
+      const object = {
         uuid: '4',
         parent: group
       };
-      assertUuidPath(object2, '4|id2');
+      assertUuidPath(object, '4|id2');
+    });
+
+    it('ignores parents if a skip rule matches', () => {
+      class CustomOutline extends Outline {
+      }
+
+      session.desktop.id = '1'; // ensure desktop has an id. Must be ignored for uuidPath because there is a skip rule.
+      const root = scout.create(Widget, {parent: session.desktop, id: 'id2'});
+      const group = scout.create(CustomOutline, {parent: root, uuid: '3'}); // Outline and subclasses of Outline are ignored because there is a skip rule
+      const object = {
+        uuid: '4',
+        parent: group
+      };
+      assertUuidPath(object, '4|id2');
     });
 
     it('returns null if object has no uuid candidates', () => {

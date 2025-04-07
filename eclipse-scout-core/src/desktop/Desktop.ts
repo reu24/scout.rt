@@ -11,8 +11,8 @@ import {
   AbstractLayout, Action, arrays, BenchColumnLayoutData, BookmarkSupport, BusyIndicatorOptions, BusySupport, cookies, DeferredGlassPaneTarget, DesktopBench, DesktopBenchViewActivateEvent, DesktopEventMap, DesktopFormController,
   DesktopHeader, DesktopLayout, DesktopModel, DesktopNavigation, DesktopNotification, Device, DisableBrowserF5ReloadKeyStroke, DisableBrowserTabSwitchingKeyStroke, DisplayParent, DisplayViewId, EnumObject, Event, EventEmitter, EventHandler,
   FileChooser, FileChooserController, Form, GlassPaneTarget, HtmlComponent, HtmlEnvironment, InitModelOf, KeyStrokeContext, Menu, MessageBox, MessageBoxController, NativeNotificationVisibility, ObjectOrChildModel, ObjectOrModel, objects,
-  OfflineDesktopNotification, OpenUriHandler, Outline, OutlineContent, OutlineViewButton, Popup, ReloadPageOptions, ResponsiveHandler, scout, SimpleTabArea, SimpleTabBox, Splitter, SplitterMoveEndEvent, SplitterMoveEvent,
-  SplitterPositionChangeEvent, strings, styles, Tooltip, Tree, TreeDisplayStyle, UnsavedFormChangesForm, URL, ViewButton, webstorage, Widget, widgets
+  ObjectUuidProvider, OfflineDesktopNotification, OpenUriHandler, Outline, OutlineContent, OutlineViewButton, Popup, ReloadPageOptions, ResponsiveHandler, scout, SimpleTabArea, SimpleTabBox, Splitter, SplitterMoveEndEvent,
+  SplitterMoveEvent, SplitterPositionChangeEvent, strings, styles, Tooltip, Tree, TreeDisplayStyle, UnsavedFormChangesForm, URL, ViewButton, webstorage, Widget, widgets
 } from '../index';
 import $ from 'jquery';
 
@@ -1897,3 +1897,5 @@ export type BrowserHistoryEntry = {
 };
 export type DesktopHistoryState = { deepLinkPath: string };
 export type GlassPaneTargetFilter = (target: HTMLElement, element: Widget) => boolean;
+
+ObjectUuidProvider.uuidPathSkipRules.push(widget => widget instanceof Desktop);

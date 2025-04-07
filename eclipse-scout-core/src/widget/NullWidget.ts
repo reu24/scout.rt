@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {NullWidgetEventMap, NullWidgetModel, ObjectOrChildModel, Widget} from '../index';
+import {NullWidgetEventMap, NullWidgetModel, ObjectOrChildModel, ObjectUuidProvider, Widget} from '../index';
 
 export class NullWidget extends Widget implements NullWidgetModel {
   declare model: NullWidgetModel;
@@ -26,3 +26,5 @@ export class NullWidget extends Widget implements NullWidgetModel {
     this.setProperty('childWidget', childWidget);
   }
 }
+
+ObjectUuidProvider.uuidPathSkipRules.push(widget => widget instanceof NullWidget);
