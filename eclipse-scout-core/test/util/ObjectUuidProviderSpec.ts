@@ -270,12 +270,6 @@ describe('ObjectUuidProvider', () => {
       assertUuidPath(object, '4|2', false);
     });
 
-    it('skips parent if requested', () => {
-      const root = scout.create(Widget, {parent: session.desktop, uuid: '2' /* skipped by request */});
-      const group = scout.create(Widget, {parent: root, uuid: '3'});
-      assertUuidPath(group, '3', false, false);
-    });
-
     it('stops on classId by default', () => {
       const root = scout.create(Widget, {parent: session.desktop, id: 'id2' /* ignored because child uses classId which stops the parent visit */});
       const group = scout.create(Widget, {parent: root, classId: '3'});
@@ -284,7 +278,6 @@ describe('ObjectUuidProvider', () => {
         parent: group
       };
       assertUuidPath(object, '4');
-      assertUuidPath(object, '4|3', true, true /* enforce to use parent even if a classId is present */);
     });
 
     it('ignores parent if classId from remote is used', () => {
@@ -299,8 +292,8 @@ describe('ObjectUuidProvider', () => {
       assertUuidPath(remoteElement, '3');
     });
 
-    function assertUuidPath(object: ObjectUuidSource, expectedUuidPath: string, useFallback?: boolean, appendParent?: boolean) {
-      expect(uuidProvider.uuidPath(object, {useFallback, appendParent})).toBe(expectedUuidPath);
+    function assertUuidPath(object: ObjectUuidSource, expectedUuidPath: string, useFallback?: boolean) {
+      expect(uuidProvider.uuidPath(object, {useFallback})).toBe(expectedUuidPath);
     }
   });
 

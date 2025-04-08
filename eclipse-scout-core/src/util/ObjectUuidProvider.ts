@@ -86,7 +86,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     if (!parent) {
       return uuid;
     }
-    const appendParent = scout.nvl(options.appendParent, !object.classId); // by default stop on classIds as they typically include its parents already
+    const appendParent = !object.classId; // by default stop on classIds as they typically include its parents already
     if (!appendParent) {
       return uuid;
     }
@@ -257,12 +257,6 @@ export interface UuidPathOptions {
    * Default is true.
    */
   useFallback?: boolean;
-
-  /**
-   * Controls if the path should include the {@link uuidPath} of the parent.
-   * By default, the parent is included unless the object has a classId set as classIds typically already include its parents (computed by the Java server).
-   */
-  appendParent?: boolean;
 
   /**
    * Specifies whether computation of the uuidPath should be aborted as soon as {@link ObjectUuidProvider.uuid} returns null.
