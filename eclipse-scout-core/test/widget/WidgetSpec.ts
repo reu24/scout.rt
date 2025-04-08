@@ -2284,29 +2284,18 @@ describe('Widget', () => {
       return scout.create(Widget, {parent: w3, classId: 'w4-class-id_w3-class-id_w2-class-id_w1-class-id_root-class-id'});
     }
 
-    it('uuidPath for local widget includes parent', () => {
-      // local widgets do not contain their parent classIds already.
-      const w4 = createLocalWidgetTree();
+    it('uuidPath for mixed widget contains uuids of local parents and classId of first remote parent', () => {
+      const w4 = createMixedWidgetTree();
       expect(w4.parent.buildUuidPath()).toBe('w3-uuid|w2-uuid|w1-class-id_root-class-id');
       expect(w4.buildUuidPath()).toBe('w4-uuid|w3-uuid|w2-uuid|w1-class-id_root-class-id');
     });
 
-    function createLocalWidgetTree(): Widget {
+    function createMixedWidgetTree(): Widget {
       const root = scout.create(Widget, {parent: session.root, classId: 'root-class-id'});
       const w1 = scout.create(Widget, {parent: root, classId: 'w1-class-id_root-class-id'});
       const w2 = scout.create(Widget, {parent: w1, uuid: 'w2-uuid'});
       const w3 = scout.create(Widget, {parent: w2, uuid: 'w3-uuid'});
       return scout.create(Widget, {parent: w3, uuid: 'w4-uuid'});
     }
-
-    it('buildUuid returns id with parents for local and remote case', () => {
-      const remote = createRemoteWidgetTree();
-      expect(remote.parent.buildUuid()).toBe('w3-class-id_w2-class-id_w1-class-id_root-class-id');
-      expect(remote.buildUuid()).toBe('w4-class-id_w3-class-id_w2-class-id_w1-class-id_root-class-id');
-
-      const local = createLocalWidgetTree();
-      expect(local.parent.buildUuid()).toBe('w3-uuid|w2-uuid|w1-class-id_root-class-id');
-      expect(local.buildUuid()).toBe('w4-uuid|w3-uuid|w2-uuid|w1-class-id_root-class-id');
-    });
   });
 });

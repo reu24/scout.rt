@@ -74,12 +74,12 @@ describe('ObjectUuidProvider', () => {
         expect(uuidProvider.skipParent(new TestGroupBox())).toBeFalse();
 
         rule = w => w instanceof TestGroupBox;
-        ObjectUuidProvider.uuidPathSkipRules.push(rule);
+        ObjectUuidProvider.uuidPathAlwaysSkipRules.push(rule);
         expect(uuidProvider.skipParent(new TestGroupBox())).toBeTrue();
       });
 
       afterEach(() => {
-        arrays.remove(ObjectUuidProvider.uuidPathSkipRules, rule);
+        arrays.remove(ObjectUuidProvider.uuidPathAlwaysSkipRules, rule);
       });
     });
   });
@@ -192,6 +192,15 @@ describe('ObjectUuidProvider', () => {
       assertUuidPath(object, '4|id3');
     });
 
+    it('prefers given parent', () => {
+      const root = scout.create(Widget, {parent: session.desktop, uuid: '2'});
+      const parent = scout.create(Widget, {parent: root, uuid: '3'});
+      const object = {
+        uuid: '4'
+      };
+      expect(uuidProvider.uuidPath(object, {parent})).toBe('4|3|2');
+    });
+
     it('ignores parents if they are in skip list', () => {
       const root = scout.create(Widget, {parent: session.desktop, id: 'id2'});
       const group = scout.create(GroupBox, {parent: root, uuid: '3'}); // GroupBoxes are ignored
@@ -239,15 +248,6 @@ describe('ObjectUuidProvider', () => {
       expect(uuidProvider.uuidPath(object, {considerSkipWidgets: false})).toBe('1|id1|2');
     });
 
-    it('returns null if object has no uuid candidates', () => {
-      const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
-      const object = {
-        id: uuidProvider.createUiSeqId(),
-        parent
-      };
-      assertUuidPath(object, null);
-    });
-
     it('works recursively', () => {
       const root = scout.create(Widget, {parent: session.desktop, id: 'id2'});
       const group = scout.create(Widget, {parent: root, uuid: '3'});
@@ -259,6 +259,15 @@ describe('ObjectUuidProvider', () => {
       assertUuidPath(object, '4|Widget|3|id2');
     });
 
+    it('returns null if object has no uuid candidates', () => {
+      const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
+      const object = {
+        id: uuidProvider.createUiSeqId(),
+        parent
+      };
+      assertUuidPath(object, null);
+    });
+
     it('ignores parents without uuid and classId if fallback is disabled', () => {
       const root = scout.create(Widget, {parent: session.desktop, uuid: '2'});
       const group = scout.create(Widget, {parent: root, id: 'id3'});
@@ -268,6 +277,28 @@ describe('ObjectUuidProvider', () => {
         parent: parent
       };
       assertUuidPath(object, '4|2', false);
+    });
+
+    it('aborts computing on parents without uuid and classId if requested', () => {
+      // abortIfNoUuidFound is mainly used by the ObjectUuidProvider itself but may also be set explicitly, but it is questionable how useful this is
+      // If aborting is explicitly enabled, parent uuids will only be appended if every parent in between has a relevant id
+      const root = scout.create(Widget, {parent: session.desktop, uuid: '2'});
+      const group = scout.create(Widget, {parent: root, id: 'id3'});
+      const parent = scout.create(Widget, {parent: group});
+      const object = {
+        uuid: '4',
+        parent: parent
+      };
+      expect(uuidProvider.uuidPath(object, {abortIfNoUuidFound: true, useFallback: false})).toBe('4');
+
+      // If aborting is disabled, an uuid of a parent may be returned instead the uuid of the starting element
+      const root2 = scout.create(Widget, {parent: session.desktop, uuid: '2'});
+      const group2 = scout.create(Widget, {parent: root2, id: 'id3'});
+      const parent2 = scout.create(Widget, {parent: group2});
+      const object2 = {
+        parent: parent2 // Does not have an uuid -> will be ignored
+      };
+      expect(uuidProvider.uuidPath(object2, {abortIfNoUuidFound: false, useFallback: false})).toBe('2');
     });
 
     it('stops on classId by default', () => {
@@ -299,8 +330,8 @@ describe('ObjectUuidProvider', () => {
 
   describe('createDependentUuid', () => {
     it('calls buildUuid and prepends a prefix', () => {
-      expect(uuidProvider.createDependentUuid('abc', {uuid: '123'})).toBe('abc-123');
-      expect(uuidProvider.createDependentUuid('abc', {classId: 'cde'})).toBe('abc-cde');
+      expect(uuidProvider.createDependentUuid('abc', {uuid: '123'})).toBe(`abc${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}123`);
+      expect(uuidProvider.createDependentUuid('abc', {classId: 'cde'})).toBe(`abc${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}cde`);
       expect(uuidProvider.createDependentUuid('abc', {})).toBe(null);
     });
   });
@@ -309,7 +340,7 @@ describe('ObjectUuidProvider', () => {
     it('uses createDependentUuid to set a uuid if the object does not have one yet', () => {
       let button = scout.create(Button, {parent: session.desktop});
       uuidProvider.setDependentUuid('abc', {uuid: '123'}, button);
-      expect(button.uuid).toBe('abc-123');
+      expect(button.uuid).toBe(`abc${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}123`);
 
       button.setUuid('qqq');
       expect(button.uuid).toBe('qqq');
@@ -324,7 +355,7 @@ describe('ObjectUuidProvider', () => {
 
       let button3 = scout.create(Button, {parent: session.desktop});
       uuidProvider.setDependentUuid('abc', {classId: '123'}, button3);
-      expect(button3.uuid).toBe('abc-123'); // Considers classId
+      expect(button3.uuid).toBe(`abc${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}123`); // Considers classId
       expect(button3.classId).toBe(null); // Does not set classId because it is not needed
     });
   });

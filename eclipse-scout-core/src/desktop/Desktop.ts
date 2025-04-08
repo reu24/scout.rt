@@ -1898,4 +1898,4 @@ export type BrowserHistoryEntry = {
 export type DesktopHistoryState = { deepLinkPath: string };
 export type GlassPaneTargetFilter = (target: HTMLElement, element: Widget) => boolean;
 
-ObjectUuidProvider.uuidPathSkipRules.push(widget => widget instanceof Desktop);
+ObjectUuidProvider.uuidPathAlwaysSkipRules.push(widget => widget instanceof Desktop);

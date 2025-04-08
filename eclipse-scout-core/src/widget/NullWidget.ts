@@ -27,4 +27,4 @@ export class NullWidget extends Widget implements NullWidgetModel {
   }
 }
 
-ObjectUuidProvider.uuidPathSkipRules.push(widget => widget instanceof NullWidget);
+ObjectUuidProvider.uuidPathAlwaysSkipRules.push(widget => widget instanceof NullWidget);

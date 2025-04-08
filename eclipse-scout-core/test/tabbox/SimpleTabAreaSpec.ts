@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {GroupBox, scout, SimpleTab, SimpleTabArea, SimpleTabBox} from '../../src/index';
+import {GroupBox, ObjectUuidProvider, scout, SimpleTab, SimpleTabArea, SimpleTabBox} from '../../src/index';
 
 describe('SimpleTabArea', () => {
   let session: SandboxSession;
@@ -114,14 +114,14 @@ describe('SimpleTabArea', () => {
           view: view2
         }, {
           objectType: SimpleTab,
-          view: view2,
+          view: view3,
           uuid: '3'
         }]
       });
       tabArea.render();
-      expect(tabArea.tabs[0].buildUuid()).toBe('tab-one');
-      expect(tabArea.tabs[1].buildUuid()).toBe('tab-two');
-      expect(tabArea.tabs[2].buildUuid()).toBe('3'); // Does not override explicit id
+      expect(tabArea.tabs[0].uuid).toBe(`tab${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}one`);
+      expect(tabArea.tabs[1].uuid).toBe(`tab${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}two`);
+      expect(tabArea.tabs[2].uuid).toBe('3'); // Expect that explicit id is not overridden
     });
   });
 });

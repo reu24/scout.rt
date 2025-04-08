@@ -1277,4 +1277,4 @@ export class Outline extends Tree implements DisplayParent, OutlineModel {
 
 // There is never more than one outline shown at a time -> no need to include any outline in a uuidPath.
 // This is still true if outline fields are used. In that case the field and its parents are considered and make it unique.
-ObjectUuidProvider.uuidPathSkipRules.push(widget => widget instanceof Outline);
+ObjectUuidProvider.uuidPathAlwaysSkipRules.push(widget => widget instanceof Outline);

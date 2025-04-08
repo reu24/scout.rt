@@ -397,6 +397,7 @@ export class ContextMenuPopup extends Popup implements ContextMenuPopupModel {
           delegateEventsToOriginal: ['acceptInput', 'action', 'click'],
           delegateAllPropertiesToClone: true,
           delegateAllPropertiesToOriginal: true,
+          excludePropertiesToClone: ['uuid'],
           excludePropertiesToOriginal: ['selected', 'logicalGrid', 'tabbable']
         });
         menu.setTabbable(false);

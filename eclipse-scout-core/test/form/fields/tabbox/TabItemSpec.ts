@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {HtmlComponent, scout, TabBox, TabItem} from '../../../../src/index';
+import {HtmlComponent, ObjectUuidProvider, scout, TabBox, TabItem} from '../../../../src/index';
 import {TabBoxSpecHelper} from '../../../../src/testing/index';
 
 describe('TabItem', () => {
@@ -148,8 +148,8 @@ describe('TabItem', () => {
       tabBox.render();
       expect(tabBox.tabItems[0].buildUuid()).toBe('1');
       expect(tabBox.tabItems[1].buildUuid()).toBe('2');
-      expect(tabBox.header.tabArea.tabs[0].buildUuid()).toBe('tab-1');
-      expect(tabBox.header.tabArea.tabs[1].buildUuid()).toBe('tab-2');
+      expect(tabBox.header.tabArea.tabs[0].uuid).toBe(`tab${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}1`);
+      expect(tabBox.header.tabArea.tabs[1].uuid).toBe(`tab${ObjectUuidProvider.DEPENDENT_UUID_DELIMITER}2`);
     });
   });
 });

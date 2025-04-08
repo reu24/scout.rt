@@ -19,11 +19,9 @@ import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.eclipse.scout.rt.client.ui.AbstractWidget;
-import org.eclipse.scout.rt.client.ui.ObjectIdProvider;
 import org.eclipse.scout.rt.platform.ApplicationScoped;
 import org.eclipse.scout.rt.platform.classid.ITypeWithClassId;
 import org.eclipse.scout.rt.platform.exception.ProcessingException;
-import org.eclipse.scout.rt.platform.util.LazyValue;
 import org.eclipse.scout.rt.platform.util.StringUtility;
 import org.eclipse.scout.rt.server.commons.servlet.UrlHints;
 import org.json.JSONObject;
@@ -48,7 +46,6 @@ public class InspectorInfo {
    */
   public static final Pattern CLASS_ID_WITH_UUID_PATTERN = Pattern.compile(UUID_PATTERN + "(?:" + ITypeWithClassId.ID_CONCAT_SYMBOL + UUID_PATTERN + ")*");
   private static final MessageDigest SHA256 = createSha256Digest();
-  private static final LazyValue<ObjectIdProvider> INSPECTOR_ID_PROVIDER = new LazyValue<>(ObjectIdProvider.class);
 
   private static MessageDigest createSha256Digest() {
     try {
@@ -76,9 +73,12 @@ public class InspectorInfo {
     if (json == null || model == null) {
       return;
     }
-    String id = INSPECTOR_ID_PROVIDER.get().getId(model);
-    if (!StringUtility.isNullOrEmpty(id)) {
-      json.put(PROP_CLASS_ID, prepareClassId(id));
+    String classId = null;
+    if (model instanceof ITypeWithClassId) {
+      classId = ((ITypeWithClassId) model).classId();
+    }
+    if (!StringUtility.isNullOrEmpty(classId)) {
+      json.put(PROP_CLASS_ID, prepareClassId(classId));
     }
     if (UrlHints.isInspectorHint(req)) {
       json.put(PROP_MODEL_CLASS, model.getClass().getName());

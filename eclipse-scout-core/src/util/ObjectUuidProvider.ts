@@ -39,6 +39,11 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    */
   static UUID_PATH_DELIMITER = '|'; // "-" is used by UUID, "." by ClassNames, "_" by ClassId path from Java (see ITypeWithClassId.ID_CONCAT_SYMBOL).
 
+  /**
+   * Delimiter for dependent uuids
+   */
+  static DEPENDENT_UUID_DELIMITER = '@';
+
   /** use {@link createUiSeqId} to generate a new ID */
   protected static _UI_SEQ_ID_PATTERN = new RegExp('^' + ObjectUuidProvider.UI_SEQ_ID_PREFIX + '\\d+$');
   protected static _INSTANCE: ObjectUuidProvider;
@@ -58,8 +63,10 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
 
   /**
    * Modifiable list of rules which are used to determine if a parent should be skipped when building the uuidPath.
+   *
+   * These rules are always applied, even if {@link UuidPathOptions.considerSkipWidgets} is set to false.
    */
-  static uuidPathSkipRules: ((widget: Widget) => boolean)[] = [];
+  static uuidPathAlwaysSkipRules: ((widget: Widget) => boolean)[] = [];
 
   constructor() {
     this.objectType = null;
@@ -78,42 +85,69 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    */
   uuidPath(object: ObjectUuidSource, options?: UuidPathOptions) {
     options = scout.nvl(options, {});
-    const uuid = this.uuid(object, options.useFallback);
-    if (!uuid && scout.nvl(options.abortIfNoUuidFound, true)) { // Abort if the main object (not a parent) does not have an uuid
+
+    const uuid = this._buildUuid(object, options.useFallback);
+
+    // Abort if the starting element (not a parent) does not have an uuid
+    if (!uuid && scout.nvl(options.abortIfNoUuidFound, true)) {
       return null;
     }
+
+    // Abort if there is no parent
     let parent = options.parent || object.parent;
     if (!parent) {
       return uuid;
     }
-    const appendParent = !object.classId; // by default stop on classIds as they typically include its parents already
+
+    // By default, stop on classIds as they typically include its parents already
+    const appendParent = !object.classId;
     if (!appendParent) {
       return uuid;
     }
-    if (objects.isNullOrUndefined(options.considerSkipWidgets) || options.considerSkipWidgets === 'dynamicFalse') {
-      // Do not skip parent widgets if the object only has an object type because the objectType normally is not unique enough
-      options.considerSkipWidgets = (!!object.uuid || !!object.classId || this._considerId(object)) ? 'dynamicTrue' : 'dynamicFalse';
-    }
-    parent = this._findUuidPathParent(parent, options);
+
+    // Find the next relevant parent (some parents may be skipped)
+    let considerSkipWidgets = this._computeConsiderSkipWidgets(options, object);
+    parent = this._findUuidPathParent(parent, considerSkipWidgets);
+
+    // Prepare options for the next iteration
+    options.considerSkipWidgets = considerSkipWidgets;
     options.abortIfNoUuidFound = scout.nvl(options.abortIfNoUuidFound, false); // Skip parents without an uuid
+    options.parent = null; // Passed element must only be used for starting element
+
+    // Build the parent path and join it with the current uuid
     return strings.join(ObjectUuidProvider.UUID_PATH_DELIMITER, uuid, parent?.buildUuidPath(options));
   }
 
-  protected _findUuidPathParent(parent: Widget, options: UuidPathOptions): Widget {
+  protected _computeConsiderSkipWidgets(options: UuidPathOptions, object: ObjectUuidSource): UuidPathConsiderSkipWidgets {
+    if (objects.isNullOrUndefined(options.considerSkipWidgets) || options.considerSkipWidgets === 'dynamicFalse') {
+      // Do not skip parent widgets if the object only has an object type because the objectType normally is not unique enough
+      return (!!object.uuid || !!object.classId || this._considerId(object)) ? 'dynamicTrue' : 'dynamicFalse';
+    }
+    return options.considerSkipWidgets;
+  }
+
+  protected _findUuidPathParent(parent: Widget, considerSkipWidgets: UuidPathConsiderSkipWidgets): Widget {
     if (!parent) {
       return null;
     }
-    if (this._isPathRelevantParent(parent, options)) {
+    if (this._isPathRelevantParent(parent, considerSkipWidgets)) {
       return parent;
     }
-    return parent.findParent(p => this._isPathRelevantParent(p, options));
+    return parent.findParent(p => this._isPathRelevantParent(p, considerSkipWidgets));
   }
 
-  protected _isPathRelevantParent(parent: Widget, options: UuidPathOptions): boolean {
-    if (this.skipParent(parent, scout.isOneOf(options.considerSkipWidgets, true, 'dynamicTrue'))) {
+  protected _isPathRelevantParent(parent: Widget, considerSkipWidgets: UuidPathConsiderSkipWidgets): boolean {
+    if (this.skipParent(parent, scout.isOneOf(considerSkipWidgets, true, 'dynamicTrue'))) {
       return false; // always uninteresting parents, event if they have a stable ID.
     }
     return true;
+  }
+
+  protected _buildUuid(object: ObjectUuidSource, useFallback?: boolean) {
+    if (object.buildUuid) {
+      return object.buildUuid(useFallback);
+    }
+    return this.uuid(object, useFallback);
   }
 
   /**
@@ -187,7 +221,7 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
     if (skip) {
       return true;
     }
-    return ObjectUuidProvider.uuidPathSkipRules.some(rule => rule(obj));
+    return ObjectUuidProvider.uuidPathAlwaysSkipRules.some(rule => rule(obj));
   }
 
   /**
@@ -196,14 +230,14 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
    * This is useful for objects not having an own uuid but need to be referenced nevertheless.
    */
   createDependentUuid(prefix: string, source: ObjectUuidSource): string {
-    const uuid = this.uuid(source);
+    const uuid = this._buildUuid(source);
     if (!uuid) {
       return null;
     }
-    return strings.join('-', prefix, uuid);
+    return strings.join(ObjectUuidProvider.DEPENDENT_UUID_DELIMITER, prefix, uuid);
   }
 
-  setDependentUuid(prefix: string, source: ObjectUuidSource, target: ObjectWithUuid & ObjectUuidSource): string {
+  setDependentUuid(prefix: string, source: ObjectUuidSource, target: Required<ObjectUuidSource>): string {
     if (target.uuid || target.classId) {
       return;
     }
@@ -266,9 +300,15 @@ export interface UuidPathOptions {
   abortIfNoUuidFound?: boolean;
 
   /**
-   * Specifies whether
+   * Specifies whether the {@link ObjectUuidProvider.uuidPathSkipWidgets} should be considered when building the uuidPath.
+   * By default, the skipWidgets are considered once an object (either the starting element or a parent) is found with a relevant id (id, uuid or classId).
+   *
+   * For example:
+   * - When the starting element contains a relevant id, the skipWidgets are considered for the parents -> all parents that are part of skipWidgets will be skipped.
+   * - When the starting element does not contain a relevant id, the parents are not skipped even if they are part of the skipWidgets until a parent is reached with a relevant id.
+   *   All further parents may be skipped again if they are part of the skipWidgets.
    */
-  considerSkipWidgets?: boolean | 'dynamicTrue' | 'dynamicFalse';
+  considerSkipWidgets?: UuidPathConsiderSkipWidgets;
 
   /**
    * Optional {@link Widget} to use as parent of the object given.
@@ -290,3 +330,5 @@ export interface ObjectUuidProviderModel extends ObjectModel<ObjectUuidProvider>
   object?: ObjectUuidSource;
   parent?: Widget;
 }
+
+export type UuidPathConsiderSkipWidgets = boolean | 'dynamicTrue' | 'dynamicFalse';
