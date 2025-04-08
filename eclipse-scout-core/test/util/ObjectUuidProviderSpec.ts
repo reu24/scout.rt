@@ -216,6 +216,29 @@ describe('ObjectUuidProvider', () => {
       assertUuidPath(object, '4|id2');
     });
 
+    it('does not consider skip widgets if object only has an objectType', () => {
+      session.desktop.id = '1'; // ensure desktop has an id. Should be ignored for uuidPath.
+      const root = scout.create(Widget, {parent: session.desktop, uuid: '2'});
+      const group = scout.create(GroupBox, {parent: root, id: 'id1'}); // GroupBox is in skip list but must not be ignored
+      const object = scout.create(Button, {parent: group}); // Does not have an id, uuid or classId -> it is not unique enough to ignore parents
+      assertUuidPath(object, 'Button|id1|2');
+
+      // SkipWidgets are not considered because every object only has an object type
+      // SkipRules are always considered -> Desktop and NullWidget must never be part of the uuidPath
+      const root2 = scout.create(Widget, {parent: session.desktop});
+      const group2 = scout.create(GroupBox, {parent: root2});
+      const object2 = scout.create(Button, {parent: group2});
+      assertUuidPath(object2, 'Button|GroupBox|Widget');
+    });
+
+    it('does not consider skip widgets if requested', () => {
+      session.desktop.id = '1'; // ensure desktop has an id. Should be ignored for uuidPath.
+      const root = scout.create(Widget, {parent: session.desktop, uuid: '2'});
+      const group = scout.create(GroupBox, {parent: root, id: 'id1'}); // Won't be skipped
+      const object = scout.create(Button, {parent: group, uuid: '1'});
+      expect(uuidProvider.uuidPath(object, {considerSkipWidgets: false})).toBe('1|id1|2');
+    });
+
     it('returns null if object has no uuid candidates', () => {
       const parent = scout.create(Widget, {parent: session.desktop, id: 'id3'});
       const object = {

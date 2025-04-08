@@ -9,7 +9,8 @@
  */
 
 import {
-  AdapterData, App, Device, GroupBox, Locale, locales, LogicalGridLayout, ModelAdapterLike, ObjectCreator, ObjectFactory, ObjectFactoryOptions, objects, ObjectType, ObjectUuidProvider, Session, strings, TileGrid, ValueField, Widget, widgets
+  AdapterData, App, Device, GroupBox, Locale, locales, LogicalGridLayout, ModelAdapterLike, ObjectCreator, ObjectFactory, ObjectFactoryOptions, objects, ObjectType, ObjectUuidProvider, Session, strings, TileGrid, UuidPathOptions,
+  ValueField, Widget, widgets
 } from './index';
 import $ from 'jquery';
 
@@ -89,10 +90,10 @@ export interface ObjectWithUuid {
    * Computes a unique identifier for the object considering parent objects (if existing).
    *
    * Note: The returned id may not be unique within the application! E.g. if the same form is opened twice, its children will share the same ids.
-   * @param useFallback Optional boolean specifying if a fallback identifier may be used or created in case an object has no specific identifier set. The fallback may be less stable. Default is true.
+   * @param options Optional {@link UuidPathOptions} controlling the computation of the path.
    * @see ObjectUuidProvider.uuidPath.
    */
-  buildUuidPath(useFallback?: boolean): string;
+  buildUuidPath(options?: UuidPathOptions): string;
 
   /**
    * Sets the {@link uuid} property.

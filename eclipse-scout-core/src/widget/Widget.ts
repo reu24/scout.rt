@@ -10,7 +10,7 @@
 import {
   Action, arrays, DeferredGlassPaneTarget, Desktop, Device, ensureId, EnumObject, EventDelegator, EventHandler, filters, focusUtils, Form, FullModelOf, graphics, HtmlComponent, icons, InitModelOf, inspector, KeyStroke, KeyStrokeContext,
   LayoutData, LoadingSupport, LogicalGrid, ModelAdapter, ObjectOrChildModel, ObjectOrType, objects, ObjectUuidProvider, ObjectWithType, ObjectWithUuid, Predicate, PropertyDecoration, PropertyEventEmitter, scout, ScrollbarInstallOptions,
-  scrollbars, ScrollOptions, ScrollToOptions, Session, SomeRequired, strings, texts, TreeVisitResult, WidgetEventMap, WidgetModel
+  scrollbars, ScrollOptions, ScrollToOptions, Session, SomeRequired, strings, texts, TreeVisitResult, UuidPathOptions, WidgetEventMap, WidgetModel
 } from '../index';
 import $ from 'jquery';
 
@@ -210,8 +210,8 @@ export class Widget extends PropertyEventEmitter implements WidgetModel, ObjectW
     return ObjectUuidProvider.get().uuid(this, useFallback);
   }
 
-  buildUuidPath(useFallback?: boolean): string {
-    return ObjectUuidProvider.get().uuidPath(this, {useFallback});
+  buildUuidPath(options?: UuidPathOptions): string {
+    return ObjectUuidProvider.get().uuidPath(this, options);
   }
 
   setUuid(uuid: string) {

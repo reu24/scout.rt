@@ -10,7 +10,7 @@
 import {
   arrays, BaseDoEntity, BookmarkAdapter, BookmarkTableRowIdentifierDo, ButtonTile, ChildModelOf, Constructor, dataObjects, DoTypeResolver, EnumObject, Event, EventHandler, EventListener, EventMapOf, EventModel, EventSupport, Form,
   HtmlComponent, icons, InitModelOf, inspector, Menu, MenuBar, ObjectOrChildModel, ObjectOrType, ObjectUuidProvider, ObjectWithUuid, Outline, PageDetailMenuContributor, PageEventMap, PageIdDummyPageParamDo, PageModel,
-  ParentTablePageMenuContributor, PropertyChangeEvent, RequiredUnlessNotSubclass, scout, SomeRequired, strings, Table, TableRow, TableRowClickEvent, TileOutlineOverview, TileOverviewForm, TreeNode, Widget
+  ParentTablePageMenuContributor, PropertyChangeEvent, RequiredUnlessNotSubclass, scout, SomeRequired, strings, Table, TableRow, TableRowClickEvent, TileOutlineOverview, TileOverviewForm, TreeNode, UuidPathOptions, Widget
 } from '../../../index';
 import $ from 'jquery';
 
@@ -155,10 +155,8 @@ export class Page extends TreeNode implements PageModel, ObjectWithUuid {
     return ObjectUuidProvider.get().uuid(this, useFallback);
   }
 
-  buildUuidPath(useFallback?: boolean): string {
-    return ObjectUuidProvider.get().uuidPath(this, {
-      useFallback
-    });
+  buildUuidPath(options?: UuidPathOptions): string {
+    return ObjectUuidProvider.get().uuidPath(this, options);
   }
 
   setUuid(uuid: string) {

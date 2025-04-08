@@ -9,7 +9,8 @@
  */
 import {
   AggregateTableRow, Alignment, Cell, CellEditorPopup, ColumnComparator, ColumnEventMap, ColumnModel, ColumnOptimalWidthMeasurer, ColumnUserFilter, comparators, Event, EventHandler, FormField, GridData, icons, InitModelOf, objects,
-  ObjectUuidProvider, ObjectWithType, ObjectWithUuid, PropertyEventEmitter, scout, Session, SomeRequired, Status, StringField, strings, styles, Table, TableColumnMovedEvent, TableHeader, TableHeaderMenu, TableRow, texts, ValueField
+  ObjectUuidProvider, ObjectWithType, ObjectWithUuid, PropertyEventEmitter, scout, Session, SomeRequired, Status, StringField, strings, styles, Table, TableColumnMovedEvent, TableHeader, TableHeaderMenu, TableRow, texts, UuidPathOptions,
+  ValueField
 } from '../../index';
 import $ from 'jquery';
 
@@ -191,11 +192,10 @@ export class Column<TValue = string> extends PropertyEventEmitter implements Col
     return ObjectUuidProvider.get().uuid(this, useFallback);
   }
 
-  buildUuidPath(useFallback?: boolean): string {
-    return ObjectUuidProvider.get().uuidPath(this, {
-      parent: this.table,
-      useFallback
-    });
+  buildUuidPath(options?: UuidPathOptions): string {
+    return ObjectUuidProvider.get().uuidPath(this, $.extend({
+      parent: this.table
+    }, options));
   }
 
   setUuid(uuid: string) {
