@@ -67,7 +67,6 @@ export class BookmarkSupport implements ObjectWithType, BookmarkSupportModel {
 
   setLoading(loading: boolean) {
     this.loading = loading;
-    // FIXME bsh [js-bookmark] add a better implementation
     this.desktop.setBusy(this.loading);
   }
 
@@ -117,19 +116,13 @@ export class BookmarkSupport implements ObjectWithType, BookmarkSupportModel {
   }
 
   async _activateBookmark(bookmark: IBookmarkDo, options?: ActivateBookmarkOptions): Promise<void> {
-    if (this.loading) {
-      throw BookmarkSupport.ERROR_ALREADY_LOADING;
-    }
-
-    if (!(bookmark?.definition instanceof OutlineBookmarkDefinitionDo)) {
-      throw BookmarkSupport.ERROR_WRONG_DEFINITION_TYPE;
-    }
-
-    let bookmarkDefinition = bookmark.definition;
-
-    this.setLoading(true);
     try {
-      await this._activateBookmarkHybrid(bookmarkDefinition, options);
+      if (this.loading) {
+        // noinspection ExceptionCaughtLocallyJS
+        throw BookmarkSupport.ERROR_ALREADY_LOADING;
+      }
+      this.setLoading(true);
+      await this._activateBookmarkHybrid(bookmark, options);
     } catch (error) {
       if (scout.nvl(options?.handleErrors, true)) {
         this.handleActivateBookmarkError(error);
@@ -140,7 +133,12 @@ export class BookmarkSupport implements ObjectWithType, BookmarkSupportModel {
     }
   }
 
-  protected async _activateBookmarkHybrid(bookmarkDefinition: OutlineBookmarkDefinitionDo, options?: ActivateBookmarkOptions): Promise<void> {
+  protected async _activateBookmarkHybrid(bookmark: IBookmarkDo, options?: ActivateBookmarkOptions): Promise<void> {
+    if (!(bookmark?.definition instanceof OutlineBookmarkDefinitionDo)) {
+      throw BookmarkSupport.ERROR_WRONG_DEFINITION_TYPE;
+    }
+    let bookmarkDefinition = bookmark.definition;
+
     // Scout Classic: send the bookmark to the UI server. The client model will first try to resolve
     // as much of the bookmark as it can. The remaining path will then be sent back to the UI using
     // a callback. After that, the hybrid action will end.
@@ -241,7 +239,7 @@ export class BookmarkSupport implements ObjectWithType, BookmarkSupportModel {
 
     if (arrays.hasElements(pagePath) && scout.nvl(options?.resetViewAndWarnOnFail, true)) {
       // Path not fully restored
-      parentPage.detailTable.setTableStatus(Status.error('Loading the favorite has been canceled because the entry cannot be found in this view.')); // FIXME bsh [js-bookmark] NLS: this.session.text('BookmarkResolutionCanceled')
+      parentPage.detailTable.setTableStatus(Status.error(this.session.text('BookmarkResolutionCanceled')));
     }
   }
 
@@ -262,7 +260,7 @@ export class BookmarkSupport implements ObjectWithType, BookmarkSupportModel {
         // If the row is still not accepted, the filter is apparently a non-user filter which cannot be removed -> assume page not found.
         if (!row.page.filterAccepted && parentPage.detailTable.hasUserFilter() && scout.nvl(options?.resetViewAndWarnOnFail, true)) {
           parentPage.detailTable.resetUserFilter();
-          parentPage.detailTable.setTableStatus(Status.warning('The column filters have been removed during loading of the favorite.')); // FIXME bsh [js-bookmark] NLS: this.session.text('BookmarkResetColumnFilters')
+          parentPage.detailTable.setTableStatus(Status.warning(this.session.text('BookmarkResetColumnFilters')));
           if (!row.page.filterAccepted) {
             return null; // still filtered -> not found
           }
@@ -315,25 +313,23 @@ export class BookmarkSupport implements ObjectWithType, BookmarkSupportModel {
       BookmarkDoBuilder.ERROR_PAGE_PATH_NOT_BOOKMARKABLE,
       BookmarkDoBuilder.ERROR_MISSING_ROW_BOOKMARK_IDENTIFIER
     )) {
-      return MessageBoxes.openOk(this.desktop, 'This page is not bookmarkable.', Status.Severity.ERROR); // FIXME bsh [js-bookmark] NLS: this.session.text('BookmarkResolvingFailed')
+      return MessageBoxes.openOk(this.desktop, this.session.text('CannotCreateBookmarkAtThisLocation'), Status.Severity.ERROR);
     }
     return App.get().errorHandler.handle(error);
   }
 
   handleActivateBookmarkError(error: any): JQuery.Promise<any> {
     if (error === BookmarkSupport.ERROR_ALREADY_LOADING) {
-      return MessageBoxes.openOk(this.desktop, 'Another bookmark is currently loading', Status.Severity.ERROR);
+      return; // ignore silently
     }
     if (error === BookmarkSupport.ERROR_WRONG_DEFINITION_TYPE) {
-      // throw new VetoException(TEXTS.get("CannotOpenBookmarkInOriginalPlace")); FIXME bsh [js-bookmark] NLS
-      return MessageBoxes.openOk(this.desktop, 'Bookmark cannot be opened at its original location.', Status.Severity.ERROR);
+      return MessageBoxes.openOk(this.desktop, this.session.text('BookmarkWrongDefinitionType'), Status.Severity.ERROR);
     }
     if (error === BookmarkSupport.ERROR_OUTLINE_NOT_FOUND) {
-      // throw new VetoException(TEXTS.get("BookmarkActivationFailedOutlineNotAvailable", outline == null ? TEXTS.get("Unknown") : outline.getTitle())); FIXME bsh [js-bookmark] NLS
-      return MessageBoxes.openOk(this.desktop, 'Outline not found', Status.Severity.ERROR);
+      return MessageBoxes.openOk(this.desktop, this.session.text('BookmarkOutlineNotFound'), Status.Severity.ERROR);
     }
     if (error === BookmarkSupport.ERROR_PAGE_NOT_FOUND) {
-      return MessageBoxes.openOk(this.desktop, 'There has been an error while loading the favorite.', Status.Severity.ERROR); // FIXME bsh [js-bookmark] NLS: this.session.text('BookmarkResolvingFailed')
+      return MessageBoxes.openOk(this.desktop, this.session.text('BookmarkResolvingFailed'), Status.Severity.ERROR);
     }
     return App.get().errorHandler.handle(error);
   }
