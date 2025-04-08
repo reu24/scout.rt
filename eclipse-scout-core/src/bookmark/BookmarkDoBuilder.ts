@@ -273,7 +273,7 @@ export class BookmarkDoBuilder implements ObjectWithType, BookmarkDoBuilderModel
     }
 
     titleSegments = titleSegments.filter(s => strings.hasText(s));
-    return arrays.hasElements(titleSegments) ? titleSegments.join(' - ') : 'Bookmark'; // FIXME bsh [js-bookmark] NLS
+    return arrays.hasElements(titleSegments) ? titleSegments.join(' - ') : this.session.text('Bookmark');
   }
 
   protected async _createBookmarkDescription(bookmarkDefinition: IBookmarkDefinitionDo): Promise<string> {
@@ -290,7 +290,7 @@ export class BookmarkDoBuilder implements ObjectWithType, BookmarkDoBuilderModel
     pagePath.forEach((bookmarkPage, index) => {
       let prefix = strings.repeat('  ', index);
 
-      let displayText = bookmarkPage.displayText || 'Node'; // FIXME bsh [js-bookmark[] NLS
+      let displayText = bookmarkPage.displayText || this.session.text('Node');
       lines.push(prefix + displayText);
 
       if (bookmarkPage instanceof TableBookmarkPageDo && bookmarkPage.searchData) {
