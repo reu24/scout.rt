@@ -8,11 +8,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import $ from 'jquery';
-import {AggregateTableRow, BookmarkTableRowIdentifierDo, Cell, ensureId, EnumObject, FilterElement, InitModelOf, LookupRow, ObjectWithType, Page, SomeRequired, Table, TableRowModel} from '../index';
+import {AggregateTableRow, BookmarkTableRowIdentifierDo, Cell, EnumObject, FilterElement, InitModelOf, LookupRow, objectFactoryHints, ObjectWithType, Page, SomeRequired, Table, TableRowModel} from '../index';
 
 export type TableRowStatus = EnumObject<typeof TableRow.Status>;
 
-@ensureId()
+@objectFactoryHints({ensureId: true})
 export class TableRow implements TableRowModel, ObjectWithType, FilterElement {
   declare model: TableRowModel;
   declare initModel: SomeRequired<this['model'], 'parent'>;

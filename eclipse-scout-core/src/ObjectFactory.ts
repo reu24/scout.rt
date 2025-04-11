@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {AbstractConstructor, BaseDoEntity, Constructor, FullModelOf, InitModelOf, ModelOf, ObjectModel, ObjectModelWithId, objects, ObjectUuidProvider, scout, TypeDescriptor, TypeDescriptorOptions} from './index';
+import {AbstractConstructor, Constructor, FullModelOf, InitModelOf, ModelOf, ObjectModel, ObjectModelWithId, objects, ObjectUuidProvider, scout, TypeDescriptor, TypeDescriptorOptions} from './index';
 import $ from 'jquery';
 
 export type ObjectCreator = (model?: any) => object;
@@ -24,7 +24,7 @@ export interface ObjectFactoryOptions extends TypeDescriptorOptions {
    * If the created object has an init() function, we also set the property 'id' on the model object to allow the init() function to copy the attribute from the model to the scoutObject.
    * Default is true.
    *
-   * @deprecated will be removed in a future release, use {@link ensureId} instead
+   * @deprecated will be removed in a future release, use {@link objectFactoryHints} instead
    */
   ensureUniqueId?: boolean;
 }
@@ -53,6 +53,7 @@ export class ObjectFactory {
 
   static NAMESPACE_SEPARATOR = '.';
   static MODEL_VARIANT_SEPARATOR = ':';
+  static HINTS_META_DATA_KEY = Symbol('scout.objectFactoryHints');
 
   /**
    * Creates an object from the given objectType. Only the constructor is called.
@@ -164,10 +165,11 @@ export class ObjectFactory {
 
     // Create object
     const scoutObject = this._createObjectByType(objectType, options);
+    const ensureId = this._ensureUniqueId(scoutObject, options);
     const ensureObjectType = this._ensureObjectType(scoutObject);
     if (objects.isFunction(scoutObject.init)) {
       if (model) {
-        if (model.id === undefined && this._ensureUniqueId(scoutObject, options)) {
+        if (model.id === undefined && ensureId) {
           model.id = ObjectUuidProvider.get().createUiSeqId();
         }
         if (ensureObjectType) {
@@ -177,7 +179,7 @@ export class ObjectFactory {
       scoutObject.init(model);
     }
 
-    if (this._ensureUniqueId(scoutObject, options)) {
+    if (scoutObject.id === undefined && ensureId) {
       scoutObject.id = ObjectUuidProvider.get().createUiSeqId();
     }
     if (scoutObject.objectType === undefined && ensureObjectType) {
@@ -188,11 +190,13 @@ export class ObjectFactory {
   }
 
   protected _ensureObjectType(scoutObject: any): boolean {
-    return !(scoutObject instanceof BaseDoEntity); // don't create objectType attribute for DOs
+    let hints = Reflect.getMetadata(ObjectFactory.HINTS_META_DATA_KEY, scoutObject) as ObjectFactoryHints;
+    return scout.nvl(hints?.ensureObjectType, true);
   }
 
   protected _ensureUniqueId(scoutObject: any, options?: ObjectFactoryOptions): boolean {
-    return scout.nvl(options.ensureUniqueId, scoutObject.id === ObjectUuidProvider.UI_SEQ_ID_REQUIRED);
+    let hints = Reflect.getMetadata(ObjectFactory.HINTS_META_DATA_KEY, scoutObject) as ObjectFactoryHints;
+    return scout.nvl(options?.ensureUniqueId, scout.nvl(hints?.ensureId, false));
   }
 
   /**
@@ -364,28 +368,30 @@ export class ObjectFactory {
 
 let objectFactory = new ObjectFactory();
 
+export type ObjectFactoryHints = {
+  /**
+   * Specifies whether the {@link ObjectFactory} needs to assign a unique id to the object if the object does not already have one.
+   *
+   * Default is false.
+   */
+  ensureId?: boolean;
+  /**
+   * Specifies whether the {@link ObjectFactory} needs to resolve the string based objectType using {@link ObjectType.getObjectType} and assign it to the object.
+   *
+   * Default is true.
+   */
+  ensureObjectType?: boolean;
+};
+
 /**
- * Class decorator function.
+ * A class decorator to provide hints for the {@link ObjectFactory} that control the object creation.
  *
- * It writes {@link ObjectUuidProvider.UI_SEQ_ID_REQUIRED} to the id attribute to indicate the {@link ObjectFactory} needs to assign a unique id to the object unless it already has an id.
- *
- * It is possible to disable the behavior by extending from the class having the ensureId decorator and adding the decorator with the parameter false to the subclass.
- *
- * @param ensure true to assign a unique id if necessary (default), false if not.
+ * It is possible to override existing hints by extending from the class having hints and adding the decorator with the customized hints to the subclass.
  */
-export function ensureId(ensure = true) {
+export function objectFactoryHints(hints: ObjectFactoryHints) {
   return <T extends Constructor | AbstractConstructor>(BaseClass: T) => class extends BaseClass {
-    constructor(...args: any[]) {
-      super(...args);
-      if (ensure) {
-        if (objects.isNullOrUndefined(this['id'])) {
-          this['id'] = ObjectUuidProvider.UI_SEQ_ID_REQUIRED;
-        }
-      } else {
-        if (this['id'] === ObjectUuidProvider.UI_SEQ_ID_REQUIRED) {
-          this['id'] = null;
-        }
-      }
+    static {
+      Reflect.defineMetadata(ObjectFactory.HINTS_META_DATA_KEY, hints, BaseClass.prototype);
     }
   };
 }

@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {aria, ensureId, FilterElement, icons, InitModelOf, objects, ObjectWithType, scout, Session, SomeRequired, styles, texts, Tree, TreeNodeModel} from '../index';
+import {aria, FilterElement, icons, InitModelOf, objectFactoryHints, objects, ObjectWithType, scout, Session, SomeRequired, styles, texts, Tree, TreeNodeModel} from '../index';
 import $ from 'jquery';
 
-@ensureId()
+@objectFactoryHints({ensureId: true})
 export class TreeNode implements TreeNodeModel, ObjectWithType, FilterElement {
   declare model: TreeNodeModel;
   declare initModel: SomeRequired<this['model'], 'parent'>;

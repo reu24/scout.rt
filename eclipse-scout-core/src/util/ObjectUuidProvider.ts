@@ -30,11 +30,6 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   static UI_SEQ_ID_PREFIX = '_ui_'; // must not contain any dots ('.') so that the id can be used as css selector "#..." and for the RegExp 'UI_SEQ_PATTERN'.
 
   /**
-   * Marker for the id attribute to show the {@link ObjectFactory} an id is required.
-   */
-  static UI_SEQ_ID_REQUIRED = 'UI_SEQ_ID_REQUIRED';
-
-  /**
    * Delimiter for the segments of a uuidPath.
    */
   static UUID_PATH_DELIMITER = '|'; // "-" is used by UUID, "." by ClassNames, "_" by ClassId path from Java (see ITypeWithClassId.ID_CONCAT_SYMBOL).
@@ -195,9 +190,6 @@ export class ObjectUuidProvider implements ObjectUuidProviderModel, ObjectWithTy
   protected _considerId(object: ObjectUuidSource) {
     let id = object.id;
     if (strings.empty(id)) {
-      return false;
-    }
-    if (id === ObjectUuidProvider.UI_SEQ_ID_REQUIRED) {
       return false;
     }
     if (this.isUiSeqId(id)) {

@@ -8,13 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {
-  Action, arrays, DeferredGlassPaneTarget, Desktop, Device, ensureId, EnumObject, EventDelegator, EventHandler, filters, focusUtils, Form, FullModelOf, graphics, HtmlComponent, icons, InitModelOf, inspector, KeyStroke, KeyStrokeContext,
-  LayoutData, LoadingSupport, LogicalGrid, ModelAdapter, ObjectOrChildModel, ObjectOrType, objects, ObjectUuidProvider, ObjectWithType, ObjectWithUuid, Predicate, PropertyDecoration, PropertyEventEmitter, scout, ScrollbarInstallOptions,
-  scrollbars, ScrollOptions, ScrollToOptions, Session, SomeRequired, strings, texts, TreeVisitResult, UuidPathOptions, WidgetEventMap, WidgetModel
+  Action, arrays, DeferredGlassPaneTarget, Desktop, Device, EnumObject, EventDelegator, EventHandler, filters, focusUtils, Form, FullModelOf, graphics, HtmlComponent, icons, InitModelOf, inspector, KeyStroke, KeyStrokeContext, LayoutData,
+  LoadingSupport, LogicalGrid, ModelAdapter, objectFactoryHints, ObjectOrChildModel, ObjectOrType, objects, ObjectUuidProvider, ObjectWithType, ObjectWithUuid, Predicate, PropertyDecoration, PropertyEventEmitter, scout,
+  ScrollbarInstallOptions, scrollbars, ScrollOptions, ScrollToOptions, Session, SomeRequired, strings, texts, TreeVisitResult, UuidPathOptions, WidgetEventMap, WidgetModel
 } from '../index';
 import $ from 'jquery';
 
-@ensureId()
+@objectFactoryHints({ensureId: true})
 export class Widget extends PropertyEventEmitter implements WidgetModel, ObjectWithType, ObjectWithUuid {
   declare model: WidgetModel;
   declare initModel: SomeRequired<this['model'], 'parent'>;

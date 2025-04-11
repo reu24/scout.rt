@@ -142,11 +142,6 @@ describe('ObjectUuidProvider', () => {
         assertUuid({id: uuidProvider.createUiSeqId(), objectType: 'Button'}, 'Button'); // considers object type if id is ignored
       });
 
-      it('ignores temporary id', () => {
-        assertUuid({id: ObjectUuidProvider.UI_SEQ_ID_REQUIRED}, null);
-        assertUuid({id: ObjectUuidProvider.UI_SEQ_ID_REQUIRED, objectType: 'Button'}, 'Button'); // considers object type if id is ignored
-      });
-
       it('ignores object type and id if fallback is disabled', () => {
         assertUuid({id: 'id3', objectType: '4'}, null, false);
         assertUuid({objectType: '4'}, null, false);
